@@ -2,32 +2,75 @@ package database
 
 import (
 	"context"
-	"log"
+	"encoding/json"
+	"fmt"
 	"time"
-
-	logs "Adornme/logging"
 
 	"github.com/redis/go-redis/v9"
 )
 
-var logger = logs.InitLogger("database")
+type redisConfig struct {
+	Enabled    bool   `json:"enabled"`
+	Addr       string `json:"addr"`
+	Password   string `json:"password"`
+	DB         int    `json:"db"`
+	MaxRetries int    `json:"maxRetries"`
+	Timeout    int    `json:"timeoutSeconds"`
+}
 
-func ConnectRedis(addr, password string) (*redis.Client, error) {
-	logger.Info("Connecting to database...")
+type RedisProvider struct {
+	Client *redis.Client
+}
 
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     addr,
-		Password: password,
-		DB:       0,
-	})
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := rdb.Ping(ctx).Err(); err != nil {
+// connectRedis initializes Redis client with retries
+func connectRedis(raw json.RawMessage) (*RedisProvider, error) {
+	var cfg redisConfig
+	if err := json.Unmarshal(raw, &cfg); err != nil {
 		return nil, err
 	}
+	if !cfg.Enabled {
+		return nil, nil
+	}
 
-	log.Println("Redis connected")
-	return rdb, nil
+	if cfg.MaxRetries <= 0 {
+		cfg.MaxRetries = 5
+	}
+	if cfg.Timeout <= 0 {
+		cfg.Timeout = 5
+	}
+
+	var client *redis.Client
+	var err error
+
+	for i := 0; i < cfg.MaxRetries; i++ {
+		client = redis.NewClient(&redis.Options{
+			Addr:     cfg.Addr,
+			Password: cfg.Password,
+			DB:       cfg.DB,
+		})
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.Timeout)*time.Second)
+		defer cancel()
+
+		err = client.Ping(ctx).Err()
+		if err == nil {
+			logs.Info(ctx, "Redis connected ✅")
+			return &RedisProvider{Client: client}, nil
+		}
+
+		logs.Warningf(ctx, "Redis not ready (%v), retrying in 2s...\n", err)
+		time.Sleep(2 * time.Second)
+	}
+
+	return nil, fmt.Errorf("unable to connect to Redis at %s: %v", cfg.Addr, err)
+}
+
+// HealthCheck implements DatabaseProvider interface
+func (r *RedisProvider) HealthCheck(ctx context.Context) error {
+	return r.Client.Ping(ctx).Err()
+}
+
+// Close implements DatabaseProvider interface
+func (r *RedisProvider) Close() error {
+	return r.Client.Close()
 }

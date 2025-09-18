@@ -1,0 +1,10 @@
+{"timestamp":"2025-09-18T18:45:26Z","level":"NOTICE","component":"database","podId":"-","env":"-","requestId":"req-12345","file":"db.go","function":"setupDatabases","line":37,"message":"Setup Databases Called!"}
+{"timestamp":"2025-09-18T18:45:26Z","level":"INFO","component":"database","podId":"-","env":"-","requestId":"-","file":"postgres.go","function":"connectPostgres","line":117,"message":"migration successful for db:usersdb"}
+{"timestamp":"2025-09-18T18:45:26Z","level":"INFO","component":"database","podId":"-","env":"-","requestId":"-","file":"postgres.go","function":"connectPostgres","line":117,"message":"migration successful for db:productsdb"}
+{"timestamp":"2025-09-18T18:45:26Z","level":"INFO","component":"database","podId":"-","env":"-","requestId":"-","file":"postgres.go","function":"connectPostgres","line":117,"message":"migration successful for db:ordersdb"}
+{"timestamp":"2025-09-18T18:45:27Z","level":"INFO","component":"database","podId":"-","env":"-","requestId":"-","file":"postgres.go","function":"connectPostgres","line":117,"message":"migration successful for db:inventorydb"}
+{"timestamp":"2025-09-18T18:45:27Z","level":"INFO","component":"database","podId":"-","env":"-","requestId":"req-12345","file":"postgres.go","function":"ConnectAllPostgres","line":214,"message":"All Postgres Connection Made Successfully"}
+{"timestamp":"2025-09-18T18:45:27Z","level":"INFO","component":"database","podId":"-","env":"-","requestId":"-","file":"mongodb.go","function":"connectMongo","line":40,"message":"MongoDB connected ✅"}
+{"timestamp":"2025-09-18T18:45:27Z","level":"INFO","component":"database","podId":"-","env":"-","requestId":"-","file":"redis.go","function":"connectRedis","line":57,"message":"Redis connected ✅"}
+{"timestamp":"2025-09-18T18:45:27Z","level":"INFO","component":"database","podId":"-","env":"-","requestId":"req-12345","file":"opensearch.go","function":"connectOpenSearch","line":58,"message":"OpenSearch connected ✅"}
+{"timestamp":"2025-09-18T18:45:27Z","level":"INFO","component":"database","podId":"-","env":"-","requestId":"req-12345","file":"minio.go","function":"connectMinio","line":52,"message":"MinIO connected ✅"}

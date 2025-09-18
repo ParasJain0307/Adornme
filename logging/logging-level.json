@@ -1,0 +1,10 @@
+{
+  "database": "DEBUG",
+  "restapi": "INFO",
+  "orders": "INFO",
+  "payment": "INFO",
+  "products": "INFO",
+  "shipping": "INFO",
+  "users": "INFO",
+  "admin": "INFO"
+}

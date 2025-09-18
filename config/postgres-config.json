@@ -1,0 +1,26 @@
+{
+  "users": {
+    "enabled": true,
+    "dsn": "postgres://postgres:psotrg@localhost:5432/usersdb?sslmode=disable",
+    "maxConns": 10,
+    "connMaxLifetime": "1h"
+  },
+  "products": {
+    "enabled": true,
+    "dsn": "postgres://postgres:pass@localhost:5432/productsdb?sslmode=disable",
+    "maxConns": 10,
+    "connMaxLifetime": "1h"
+  },
+  "orders": {
+    "enabled": true,
+    "dsn": "postgres://postgres:pass@localhost:5432/ordersdb?sslmode=disable",
+    "maxConns": 10,
+    "connMaxLifetime": "1h"
+  },
+  "inventory": {
+    "enabled": true,
+    "dsn": "postgres://postgres:pass@localhost:5432/inventorydb?sslmode=disable",
+    "maxConns": 10,
+    "connMaxLifetime": "1h"
+  }
+}
