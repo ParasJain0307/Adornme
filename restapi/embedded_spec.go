@@ -62,6 +62,11 @@ func init() {
     },
     "/auth/login": {
       "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "consumes": [
           "application/json"
         ],
@@ -1965,6 +1970,11 @@ func init() {
     },
     "/auth/login": {
       "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "consumes": [
           "application/json"
         ],

@@ -672,6 +672,8 @@ paths:
           description: Invalid credentials
           schema:
             $ref: '#/definitions/ErrorResponse'
+      security:
+        - BearerAuth: []
       summary: Login user
       tags:
         - Users

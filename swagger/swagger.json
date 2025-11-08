@@ -938,6 +938,11 @@
             }
           }
         },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "summary": "Login user",
         "tags": [
           "Users"

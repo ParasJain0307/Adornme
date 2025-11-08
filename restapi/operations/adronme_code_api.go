@@ -105,7 +105,7 @@ func NewAdronmeCodeAPI(spec *loads.Document) *AdronmeCodeAPI {
 		AdminUsersListUsersHandler: admin_users.ListUsersHandlerFunc(func(params admin_users.ListUsersParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation admin_users.ListUsers has not yet been implemented")
 		}),
-		UsersLoginUserHandler: users.LoginUserHandlerFunc(func(params users.LoginUserParams) middleware.Responder {
+		UsersLoginUserHandler: users.LoginUserHandlerFunc(func(params users.LoginUserParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation users.LoginUser has not yet been implemented")
 		}),
 		OrdersPlaceOrderHandler: orders.PlaceOrderHandlerFunc(func(params orders.PlaceOrderParams, principal *models.Principal) middleware.Responder {
