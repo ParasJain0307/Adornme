@@ -49,7 +49,7 @@ func connectMinio(raw json.RawMessage) (*MinioProvider, error) {
 			// quick health check: list buckets
 			_, err = client.ListBuckets(context.Background())
 			if err == nil {
-				logs.Info(ctx, "MinIO connected ✅")
+				logs.Info(Ctx, "MinIO connected ✅")
 				return &MinioProvider{Client: client}, nil
 			}
 		}

@@ -1,0 +1,1265 @@
+definitions:
+  Address:
+    description: Represents a user shipping address.
+    properties:
+      addressLine1:
+        type: string
+      addressLine2:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      createdAt:
+        format: date-time
+        type: string
+      id:
+        type: integer
+      state:
+        type: string
+      updatedAt:
+        format: date-time
+        type: string
+      userId:
+        type: integer
+      zip:
+        type: string
+    required:
+      - id
+      - userId
+      - addressLine1
+      - city
+      - state
+      - zip
+      - country
+    type: object
+  AddressCreateRequest:
+    description: Payload to add a new address.
+    properties:
+      addressLine1:
+        type: string
+      addressLine2:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      state:
+        type: string
+      zip:
+        type: string
+    required:
+      - addressLine1
+      - city
+      - state
+      - zip
+      - country
+    type: object
+  AddressUpdateRequest:
+    description: Payload to update an existing address.
+    properties:
+      addressLine1:
+        type: string
+      addressLine2:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      state:
+        type: string
+      zip:
+        type: string
+    type: object
+  AuthResponse:
+    description: Response containing JWT token and user details after login.
+    properties:
+      refreshToken:
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      user:
+        $ref: '#/definitions/User'
+    required:
+      - token
+      - user
+    type: object
+  Cart:
+    description: Shopping cart belonging to a user.
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/CartItem'
+        type: array
+      totalPrice:
+        example: 2999.5
+        format: float
+        type: number
+    type: object
+  CartItem:
+    description: An item inside the shopping cart.
+    properties:
+      name:
+        example: Gold Ring
+        type: string
+      price:
+        example: 1499.75
+        format: float
+        type: number
+      productId:
+        example: !!float 101
+        type: integer
+      quantity:
+        example: !!float 2
+        type: integer
+      subtotal:
+        example: 2999.5
+        format: float
+        type: number
+    type: object
+  CartItemRequest:
+    description: Payload to add a product to cart.
+    properties:
+      productId:
+        type: integer
+      quantity:
+        minimum: !!float 1
+        type: integer
+    required:
+      - productId
+      - quantity
+    type: object
+  CartItemUpdateRequest:
+    description: Payload to update cart item quantity.
+    properties:
+      productId:
+        type: integer
+      quantity:
+        minimum: !!float 1
+        type: integer
+    required:
+      - productId
+      - quantity
+    type: object
+  ErrorResponse:
+    description: Standard error response.
+    properties:
+      error:
+        example: BadRequest
+        type: string
+      message:
+        example: Invalid request parameters
+        type: string
+    required:
+      - error
+      - message
+    type: object
+  ForgotPasswordRequest:
+    description: Request to initiate password reset.
+    properties:
+      email:
+        example: paras@example.com
+        format: email
+        type: string
+    required:
+      - email
+    type: object
+  LoginRequest:
+    description: Payload to authenticate a user.
+    properties:
+      email:
+        example: paras@example.com
+        format: email
+        type: string
+      password:
+        example: strongPassword123
+        type: string
+    required:
+      - email
+      - password
+    type: object
+  Order:
+    description: Represents a purchase order.
+    properties:
+      createdAt:
+        format: date-time
+        type: string
+      id:
+        example: !!float 5001
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/CartItem'
+        type: array
+      status:
+        enum:
+          - pending
+          - paid
+          - shipped
+          - delivered
+          - cancelled
+        example: pending
+        type: string
+      totalPrice:
+        example: 2999.5
+        format: float
+        type: number
+      updatedAt:
+        format: date-time
+        type: string
+      userId:
+        example: !!float 101
+        type: integer
+    type: object
+  OrderCreateRequest:
+    description: Request to create a new order.
+    properties:
+      paymentMethod:
+        enum:
+          - cod
+          - card
+          - netbanking
+          - upi
+        example: upi
+        type: string
+      shippingAddressId:
+        example: !!float 2001
+        type: integer
+    required:
+      - shippingAddressId
+      - paymentMethod
+    type: object
+  OrderListResponse:
+    description: Paginated list of orders.
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/Order'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  Payment:
+    description: Represents a payment transaction.
+    properties:
+      amount:
+        format: float
+        type: number
+      createdAt:
+        format: date-time
+        type: string
+      currency:
+        type: string
+      id:
+        type: string
+      method:
+        type: string
+      orderId:
+        type: integer
+      status:
+        type: string
+      transactionId:
+        type: string
+      updatedAt:
+        format: date-time
+        type: string
+      userId:
+        type: integer
+    type: object
+  PaymentConfirmRequest:
+    description: Request to confirm a payment.
+    properties:
+      signature:
+        type: string
+      status:
+        type: string
+      transactionId:
+        type: string
+    required:
+      - transactionId
+      - status
+    type: object
+  PaymentInitiateRequest:
+    description: Request to initiate a payment.
+    properties:
+      method:
+        type: string
+      orderId:
+        type: integer
+    required:
+      - orderId
+      - method
+    type: object
+  PaymentInitiateResponse:
+    description: Response after payment initiation.
+    properties:
+      gatewayUrl:
+        type: string
+      paymentId:
+        type: string
+      status:
+        type: string
+    type: object
+  Principal:
+    properties:
+      authEmail:
+        type: string
+      authId:
+        type: string
+      authName:
+        type: string
+      crn:
+        description: Workaround for AT event tracker
+        type: string
+      region:
+        description: Workaround for API's not having region in their context
+        type: string
+      token:
+        $ref: '#/definitions/Token'
+        description: OAuth2 Token
+      userAccess:
+        $ref: '#/definitions/UserAccess'
+        description: User Access
+      userEmail:
+        description: Email of User
+        type: string
+      userID:
+        description: ID of User
+        type: string
+      userInfo:
+        $ref: '#/definitions/UserAuthenticationInfo'
+        description: Object that keeps track of user authentication info
+    type: object
+  Product:
+    description: Represents a product available in the catalog.
+    properties:
+      categoryId:
+        example: !!float 5
+        type: integer
+      createdAt:
+        format: date-time
+        type: string
+      description:
+        example: 22K pure gold necklace with intricate design
+        type: string
+      id:
+        example: !!float 101
+        type: integer
+      images:
+        example:
+          - https://cdn.adornme.com/products/101-1.jpg
+          - https://cdn.adornme.com/products/101-2.jpg
+        items:
+          type: string
+        type: array
+      name:
+        example: Gold Necklace
+        type: string
+      price:
+        example: 14999.99
+        format: float
+        type: number
+      stock:
+        example: !!float 20
+        type: integer
+      updatedAt:
+        format: date-time
+        type: string
+    required:
+      - id
+      - name
+      - price
+      - stock
+      - categoryId
+    type: object
+  ProductCreateRequest:
+    description: Request to create a new product.
+    properties:
+      categoryId:
+        type: integer
+      description:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      price:
+        format: float
+        type: number
+      stock:
+        type: integer
+    required:
+      - name
+      - price
+      - stock
+      - categoryId
+    type: object
+  ProductListResponse:
+    description: Paginated list of products.
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/Product'
+        type: array
+      limit:
+        example: !!float 20
+        type: integer
+      page:
+        example: !!float 1
+        type: integer
+      total:
+        example: !!float 100
+        type: integer
+    type: object
+  ProductUpdateRequest:
+    description: Request to update product details.
+    properties:
+      categoryId:
+        type: integer
+      description:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      price:
+        format: float
+        type: number
+      stock:
+        type: integer
+    type: object
+  RefundRequest:
+    description: Request to process a refund.
+    properties:
+      amount:
+        format: float
+        type: number
+      reason:
+        type: string
+    required:
+      - amount
+      - reason
+    type: object
+  RegisterRequest:
+    description: Payload to register a new user.
+    properties:
+      email:
+        example: paras@example.com
+        format: email
+        type: string
+      name:
+        example: Paras Jain
+        type: string
+      password:
+        example: strongPassword123
+        type: string
+      phone:
+        example: !!float 919876543210
+        type: string
+    required:
+      - name
+      - email
+      - password
+    type: object
+  ResetPasswordRequest:
+    description: Request to reset password with token.
+    properties:
+      newPassword:
+        example: strongNewPassword123
+        type: string
+      token:
+        example: reset_token_xyz
+        type: string
+    required:
+      - token
+      - newPassword
+    type: object
+  ShippingOption:
+    description: Represents available shipping option.
+    properties:
+      cost:
+        format: float
+        type: number
+      estimatedDays:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  Token:
+    properties:
+      accessToken:
+        description: AccessToken
+        type: string
+      expires:
+        description: Token Expires
+        format: date-time
+        type: string
+      refreshToken:
+        description: Refresh Token
+        type: string
+      type:
+        description: Token Type
+        type: string
+    required:
+      - accessToken
+      - type
+      - refreshToken
+      - expires
+    type: object
+  Tracking:
+    description: Represents order tracking details.
+    properties:
+      carrier:
+        type: string
+      estimatedDelivery:
+        format: date-time
+        type: string
+      orderId:
+        type: integer
+      status:
+        enum:
+          - pending
+          - dispatched
+          - in_transit
+          - delivered
+          - cancelled
+        type: string
+      trackingNumber:
+        type: string
+    type: object
+  User:
+    description: Represents a registered user in the system.
+    properties:
+      createdAt:
+        description: User creation timestamp
+        format: date-time
+        type: string
+      email:
+        description: User email address
+        example: paras@example.com
+        format: email
+        type: string
+      id:
+        description: Unique user identifier
+        example: !!float 101
+        type: integer
+      name:
+        description: Full name of the user
+        example: Paras Jain
+        type: string
+      password:
+        description: Password of user
+        type: string
+      phone:
+        description: User phone number
+        example: !!float 919876543210
+        type: string
+      updatedAt:
+        description: Last update timestamp
+        format: date-time
+        type: string
+    required:
+      - id
+      - email
+      - name
+    type: object
+  UserAccess:
+    description: Keeps tracks of individual user's access and roles
+    properties:
+      _id:
+        description: User ID
+        type: string
+        x-go-custom-tag: datastore:"id"
+        x-go-name: UserID
+      _rev:
+        type: string
+        x-go-custom-tag: datastore:"-"
+      baseRole:
+        default: user-readonly
+        description: Base Role for this User
+        enum:
+          - user-admin
+          - user-readonly
+          - service-admin
+          - service-readonly
+          - disabled
+          - pending
+        type: string
+        x-go-custom-tag: datastore:"baseRole"
+        x-isnullable: false
+      memberOf:
+        description: Member of (Tenants)
+        items:
+          type: string
+        type: array
+        x-go-custom-tag: datastore:"memberOf"
+      notes:
+        description: Notes for development (not used internally)
+        type: string
+        x-go-custom-tag: datastore:"notes,noindex,omitempty"
+    type: object
+  UserAuthenticationInfo:
+    properties:
+      credentialType:
+        description: Workaround for AT event tracker
+        type: string
+    type: object
+  UserUpdateRequest:
+    description: Payload to update user profile.
+    properties:
+      name:
+        example: Paras Jain
+        type: string
+      phone:
+        example: !!float 919876543210
+        type: string
+    type: object
+info:
+  title: Servicebroker
+  version: 1.0.0
+paths:
+  /auth/forgot-password:
+    post:
+      consumes:
+        - application/json
+      operationId: requestPasswordReset
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ForgotPasswordRequest'
+      responses:
+        "200":
+          description: Password reset email sent
+        "400":
+          description: Invalid email
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Request password reset
+      tags:
+        - Users
+  /auth/login:
+    post:
+      consumes:
+        - application/json
+      operationId: loginUser
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/LoginRequest'
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            $ref: '#/definitions/AuthResponse'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Login user
+      tags:
+        - Users
+  /auth/register:
+    post:
+      consumes:
+        - application/json
+      operationId: registerUser
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/RegisterRequest'
+      produces:
+        - application/json
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            $ref: '#/definitions/AuthResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Register a new user
+      tags:
+        - Users
+  /auth/reset-password:
+    post:
+      consumes:
+        - application/json
+      operationId: resetPassword
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ResetPasswordRequest'
+      responses:
+        "200":
+          description: Password reset successful
+        "400":
+          description: Invalid or expired token
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Reset password
+      tags:
+        - Users
+  /cart:
+    delete:
+      operationId: clearCart
+      responses:
+        "204":
+          description: Cart cleared
+      security:
+        - bearerAuth: []
+      summary: Clear cart
+      tags:
+        - Cart
+    get:
+      operationId: getCart
+      responses:
+        "200":
+          description: Current shopping cart
+          schema:
+            $ref: '#/definitions/Cart'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - bearerAuth: []
+      summary: Get current user's cart
+      tags:
+        - Cart
+    post:
+      operationId: addItemToCart
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/CartItemRequest'
+      responses:
+        "200":
+          description: Item added to cart
+          schema:
+            $ref: '#/definitions/Cart'
+      security:
+        - bearerAuth: []
+      summary: Add item to cart
+      tags:
+        - Cart
+    put:
+      operationId: updateCartItem
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/CartItemUpdateRequest'
+      responses:
+        "200":
+          description: Cart updated
+          schema:
+            $ref: '#/definitions/Cart'
+      security:
+        - bearerAuth: []
+      summary: Update item quantity in cart
+      tags:
+        - Cart
+  /orders:
+    get:
+      operationId: listOrders
+      parameters:
+        - default: !!float 1
+          in: query
+          name: page
+          type: integer
+        - default: !!float 10
+          in: query
+          name: limit
+          type: integer
+      responses:
+        "200":
+          description: Paginated list of orders
+          schema:
+            $ref: '#/definitions/OrderListResponse'
+      security:
+        - bearerAuth: []
+      summary: List user's orders
+      tags:
+        - Orders
+    post:
+      operationId: placeOrder
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/OrderCreateRequest'
+      responses:
+        "201":
+          description: Order placed successfully
+          schema:
+            $ref: '#/definitions/Order'
+        "400":
+          description: Invalid order request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - bearerAuth: []
+      summary: Place an order from cart
+      tags:
+        - Orders
+  /orders/{id}:
+    get:
+      operationId: getOrder
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: integer
+      responses:
+        "200":
+          description: Order details
+          schema:
+            $ref: '#/definitions/Order'
+        "404":
+          description: Order not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - bearerAuth: []
+      summary: Get order details
+      tags:
+        - Orders
+  /payments/initiate:
+    post:
+      operationId: initiatePayment
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/PaymentInitiateRequest'
+      responses:
+        "201":
+          description: Payment initiated
+          schema:
+            $ref: '#/definitions/PaymentInitiateResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - bearerAuth: []
+      summary: Initiate a new payment
+      tags:
+        - Payments
+  /payments/{id}:
+    get:
+      operationId: getPayment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Payment details
+          schema:
+            $ref: '#/definitions/Payment'
+        "404":
+          description: Payment not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - bearerAuth: []
+      summary: Get payment details
+      tags:
+        - Payments
+  /payments/{id}/confirm:
+    post:
+      operationId: confirmPayment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/PaymentConfirmRequest'
+      responses:
+        "200":
+          description: Payment confirmed
+          schema:
+            $ref: '#/definitions/Payment'
+        "400":
+          description: Invalid confirmation data
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Confirm a payment
+      tags:
+        - Payments
+  /payments/{id}/refund:
+    post:
+      operationId: refundPayment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/RefundRequest'
+      responses:
+        "200":
+          description: Refund processed
+          schema:
+            $ref: '#/definitions/Payment'
+        "400":
+          description: Invalid refund request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Payment not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - bearerAuth: []
+      summary: Refund a payment
+      tags:
+        - Payments
+  /products:
+    post:
+      operationId: createProduct
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ProductCreateRequest'
+      responses:
+        "201":
+          description: Product created successfully
+        "400":
+          description: Validation error
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: []
+      summary: Create a new product
+      tags:
+        - AdminProducts
+  /products/{id}:
+    delete:
+      operationId: deleteProduct
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: integer
+      responses:
+        "204":
+          description: Product deleted
+      security:
+        - bearerAuth: []
+      summary: Delete a product
+      tags:
+        - AdminProducts
+    put:
+      operationId: updateProduct
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: integer
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ProductUpdateRequest'
+      responses:
+        "200":
+          description: Product updated
+      security:
+        - bearerAuth: []
+      summary: Update a product
+      tags:
+        - AdminProducts
+  /shipping/addresses:
+    get:
+      operationId: listShippingAddresses
+      responses:
+        "200":
+          description: List of user addresses
+          schema:
+            items:
+              $ref: '#/definitions/Address'
+            type: array
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: []
+      summary: Get all addresses for logged-in user
+      tags:
+        - Shipping
+    post:
+      operationId: addShippingAddress
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/AddressCreateRequest'
+      responses:
+        "201":
+          description: Address added successfully
+          schema:
+            $ref: '#/definitions/Address'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - bearerAuth: []
+      summary: Add a new shipping address
+      tags:
+        - Shipping
+  /shipping/addresses/{id}:
+    delete:
+      operationId: deleteShippingAddress
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: integer
+      responses:
+        "204":
+          description: Address deleted
+        "404":
+          description: Address not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - bearerAuth: []
+      summary: Delete a shipping address
+      tags:
+        - Shipping
+    put:
+      operationId: updateShippingAddress
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: integer
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/AddressUpdateRequest'
+      responses:
+        "200":
+          description: Address updated
+          schema:
+            $ref: '#/definitions/Address'
+        "404":
+          description: Address not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - bearerAuth: []
+      summary: Update a shipping address
+      tags:
+        - Shipping
+  /shipping/options:
+    get:
+      operationId: listShippingOptions
+      responses:
+        "200":
+          description: List of shipping options
+          schema:
+            items:
+              $ref: '#/definitions/ShippingOption'
+            type: array
+      summary: Get available shipping options
+      tags:
+        - Shipping
+  /shipping/track/{orderId}:
+    get:
+      operationId: trackShipment
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          type: integer
+      responses:
+        "200":
+          description: Shipment tracking details
+          schema:
+            $ref: '#/definitions/Tracking'
+        "404":
+          description: Order or shipment not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - bearerAuth: []
+      summary: Track shipment for an order
+      tags:
+        - Shipping
+  /users:
+    get:
+      operationId: listUsers
+      parameters:
+        - default: !!float 1
+          in: query
+          name: page
+          type: integer
+        - default: !!float 20
+          in: query
+          name: limit
+          type: integer
+      responses:
+        "200":
+          description: List of users
+      security:
+        - bearerAuth: []
+      summary: List all users
+      tags:
+        - AdminUsers
+  /users/me:
+    get:
+      operationId: getUserProfile
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: User profile details
+          schema:
+            $ref: '#/definitions/User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - bearerAuth: []
+      summary: Get logged-in user profile
+      tags:
+        - Users
+    put:
+      consumes:
+        - application/json
+      operationId: updateUserProfile
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/UserUpdateRequest'
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Profile updated successfully
+          schema:
+            $ref: '#/definitions/User'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - bearerAuth: []
+      summary: Update logged-in user profile
+      tags:
+        - Users
+  /users/{id}:
+    delete:
+      operationId: deleteUser
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: integer
+      responses:
+        "204":
+          description: User deleted
+      security:
+        - bearerAuth: []
+      summary: Delete a user
+      tags:
+        - AdminUsers
+    get:
+      operationId: getUser
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: integer
+      responses:
+        "200":
+          description: User details
+      security:
+        - bearerAuth: []
+      summary: Get user details
+      tags:
+        - AdminUsers
+    put:
+      operationId: updateUser
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: integer
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/UserUpdateRequest'
+      responses:
+        "200":
+          description: User updated
+      security:
+        - bearerAuth: []
+      summary: Update user info
+      tags:
+        - AdminUsers
+schemes:
+  - http
+securityDefinitions:
+  apiKey:
+    in: header
+    name: x-api-key
+    type: apiKey
+  basicAuth:
+    type: basic
+  bearerAuth:
+    description: Bearer token for authentication
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

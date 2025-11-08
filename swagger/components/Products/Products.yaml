@@ -1,0 +1,129 @@
+paths:
+  /products:
+    get:
+      operationId: listProducts
+      summary: List products
+      tags: [Products]
+      parameters:
+        - name: page
+          in: query
+          type: integer
+          default: 1
+          description: Page number
+        - name: limit
+          in: query
+          type: integer
+          default: 20
+          description: Number of items per page
+        - name: search
+          in: query
+          type: string
+          description: Search term to filter products
+        - name: categoryId
+          in: query
+          type: integer
+          description: Filter products by category ID
+      responses:
+        200:
+          description: A paginated list of products
+          schema:
+            $ref: "#/definitions/ProductListResponse"
+        400:
+          description: Invalid query parameters
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+    post:
+      operationId: createProduct
+      summary: Create a new product (Admin only)
+      tags: [Products]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/ProductCreateRequest"
+      responses:
+        201:
+          description: Product created successfully
+          schema:
+            $ref: "#/definitions/Product"
+        400:
+          description: Validation error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /products/{id}:
+    get:
+      operationId: getProduct
+      summary: Get product by ID
+      tags: [Products]
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+      responses:
+        200:
+          description: Product details
+          schema:
+            $ref: "#/definitions/Product"
+        404:
+          description: Product not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+    put:
+      operationId: updateProduct
+      summary: Update a product (Admin only)
+      tags: [Products]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/ProductUpdateRequest"
+      responses:
+        200:
+          description: Product updated successfully
+          schema:
+            $ref: "#/definitions/Product"
+        400:
+          description: Validation error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          description: Product not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+    delete:
+      operationId: deleteProduct
+      summary: Delete a product (Admin only)
+      tags: [Products]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+      responses:
+        204:
+          description: Product deleted successfully
+        404:
+          description: Product not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"

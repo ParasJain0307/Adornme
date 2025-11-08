@@ -1,0 +1,141 @@
+paths:
+  /auth/register:
+    post:
+      operationId: registerUser
+      summary: Register a new user
+      tags: [Users]
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/RegisterRequest"
+      responses:
+        201:
+          description: User registered successfully
+          schema:
+            $ref: "#/definitions/AuthResponse"
+        400:
+          description: Validation error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: loginUser
+      summary: Login user
+      tags: [Users]
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/LoginRequest"
+      responses:
+        200:
+          description: Login successful
+          schema:
+            $ref: "#/definitions/AuthResponse"
+        401:
+          description: Invalid credentials
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /users/me:
+    get:
+      operationId: getUserProfile
+      summary: Get logged-in user profile
+      tags: [Users]
+      produces:
+        - application/json
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: User profile details
+          schema:
+            $ref: "#/definitions/User"
+        401:
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+    put:
+      operationId: updateUserProfile
+      summary: Update logged-in user profile
+      tags: [Users]
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/UserUpdateRequest"
+      responses:
+        200:
+          description: Profile updated successfully
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: Validation error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /auth/forgot-password:
+    post:
+      operationId: requestPasswordReset
+      summary: Request password reset
+      tags: [Users]
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/ForgotPasswordRequest"
+      responses:
+        200:
+          description: Password reset email sent
+        400:
+          description: Invalid email
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /auth/reset-password:
+    post:
+      operationId: resetPassword
+      summary: Reset password
+      tags: [Users]
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/ResetPasswordRequest"
+      responses:
+        200:
+          description: Password reset successful
+        400:
+          description: Invalid or expired token
+          schema:
+            $ref: "#/definitions/ErrorResponse"

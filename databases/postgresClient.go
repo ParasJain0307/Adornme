@@ -2,17 +2,20 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"time"
 )
 
 // ----------------- User Model -----------------
 type User struct {
-	ID        int       `db:"id"`         // Primary Key
-	Name      string    `db:"name"`       // User full name
-	Email     string    `db:"email"`      // Unique email
-	Password  string    `db:"password"`   // Hashed password
-	CreatedAt time.Time `db:"created_at"` // Creation timestamp
-	UpdatedAt time.Time `db:"updated_at"` // Optional update timestamp
+	ID           int64     `db:"id"`         // Primary Key
+	Name         string    `db:"name"`       // User full name
+	Email        string    `db:"email"`      // Unique email
+	Password     string    `db:"password"`   // Hashed password
+	CreatedAt    time.Time `db:"created_at"` // Creation timestamp
+	UpdatedAt    time.Time `db:"updated_at"` // Optional update timestamp
+	PhoneNumber  string    `db:"phone_number"`
+	RefreshToken string    `db:"refresh_token"`
 }
 
 // ----------------- Product Model -----------------
@@ -54,7 +57,7 @@ type Inventory struct {
 }
 
 // ----------------- User CRUD -----------------
-func (p *PostgresProvider) CreateUser(ctx context.Context, u User) (int, error) {
+func (p *PostgresProvider) CreateUser(ctx context.Context, u *User) (int, error) {
 	logs.Info(ctx, "Created User")
 	var id int
 	err := p.Pool.QueryRow(ctx,
@@ -72,6 +75,32 @@ func (p *PostgresProvider) GetUser(ctx context.Context, id int) (*User, error) {
 		return nil, err
 	}
 	return u, nil
+}
+
+func (p *PostgresProvider) GetUserByEmail(ctx context.Context, email string) (*User, error) {
+	u := &User{}
+	err := p.Pool.QueryRow(ctx,
+		`SELECT id,name,email,password,created_at FROM users WHERE email=$1`, email).
+		Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
+// UpdateUserTokens updates the access and refresh tokens for a user
+// UpdateRefreshToken updates the refresh token for a user
+func (p *PostgresProvider) UpdateUserTokens(ctx context.Context, userID int, refreshToken string) error {
+	_, err := p.Pool.Exec(ctx,
+		`UPDATE users 
+		 SET refresh_token = $1, updated_at = NOW() 
+		 WHERE id = $2`,
+		refreshToken, userID,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to update refresh token for user %d: %w", userID, err)
+	}
+	return nil
 }
 
 func (p *PostgresProvider) UpdateUser(ctx context.Context, u User) error {

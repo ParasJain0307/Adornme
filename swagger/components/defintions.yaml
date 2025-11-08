@@ -1,0 +1,634 @@
+swagger: "2.0"
+schemes:
+  - http
+
+securityDefinitions:
+  basicAuth:
+    type: basic
+  apiKey:
+    type: apiKey
+    name: x-api-key
+    in: header
+  bearerAuth:
+    type: apiKey
+    name: Authorization
+    in: header
+    description: "Bearer token for authentication"
+
+definitions:
+  # ---------------------------
+  # User & Authentication
+  # ---------------------------
+  User:
+    type: object
+    description: "Represents a registered user in the system."
+    required: [id, email, name]
+    properties:
+      id:
+        type: integer
+        example: 101
+        description: "Unique user identifier"
+      name:
+        type: string
+        example: Paras Jain
+        description: "Full name of the user"
+      email:
+        type: string
+        format: email
+        example: paras@example.com
+        description: "User email address"
+      phone:
+        type: string
+        example: +919876543210
+        description: "User phone number"
+      createdAt:
+        type: string
+        format: date-time
+        description: "User creation timestamp"
+      updatedAt:
+        type: string
+        format: date-time
+        description: "Last update timestamp"
+      password:
+        type: string
+        description: Password of user
+
+  RegisterRequest:
+    type: object
+    description: "Payload to register a new user."
+    required: [name, email, password]
+    properties:
+      name:
+        type: string
+        example: Paras Jain
+      email:
+        type: string
+        format: email
+        example: paras@example.com
+      password:
+        type: string
+        example: strongPassword123
+      phone:
+        type: string
+        example: +919876543210
+
+  LoginRequest:
+    type: object
+    description: "Payload to authenticate a user."
+    required: [email, password]
+    properties:
+      email:
+        type: string
+        format: email
+        example: paras@example.com
+      password:
+        type: string
+        example: strongPassword123
+
+  AuthResponse:
+    type: object
+    description: "Response containing JWT token and user details after login."
+    required: [token, user]
+    properties:
+      token:
+        type: string
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      user:
+        $ref: "#/definitions/User"
+      refreshToken:
+        type : string
+
+  ForgotPasswordRequest:
+    type: object
+    description: "Request to initiate password reset."
+    required: [email]
+    properties:
+      email:
+        type: string
+        format: email
+        example: paras@example.com
+
+  ResetPasswordRequest:
+    type: object
+    description: "Request to reset password with token."
+    required: [token, newPassword]
+    properties:
+      token:
+        type: string
+        example: reset_token_xyz
+      newPassword:
+        type: string
+        example: strongNewPassword123
+
+  UserUpdateRequest:
+    type: object
+    description: "Payload to update user profile."
+    properties:
+      name:
+        type: string
+        example: Paras Jain
+      phone:
+        type: string
+        example: +919876543210
+
+  # ---------------------------
+  # Product
+  # ---------------------------
+  Product:
+    type: object
+    description: "Represents a product available in the catalog."
+    required: [id, name, price, stock, categoryId]
+    properties:
+      id:
+        type: integer
+        example: 101
+      name:
+        type: string
+        example: Gold Necklace
+      description:
+        type: string
+        example: 22K pure gold necklace with intricate design
+      price:
+        type: number
+        format: float
+        example: 14999.99
+      stock:
+        type: integer
+        example: 20
+      categoryId:
+        type: integer
+        example: 5
+      images:
+        type: array
+        items:
+          type: string
+        example:
+          - https://cdn.adornme.com/products/101-1.jpg
+          - https://cdn.adornme.com/products/101-2.jpg
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+
+  ProductCreateRequest:
+    type: object
+    description: "Request to create a new product."
+    required: [name, price, stock, categoryId]
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      price:
+        type: number
+        format: float
+      stock:
+        type: integer
+      categoryId:
+        type: integer
+      images:
+        type: array
+        items:
+          type: string
+
+  ProductUpdateRequest:
+    type: object
+    description: "Request to update product details."
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      price:
+        type: number
+        format: float
+      stock:
+        type: integer
+      categoryId:
+        type: integer
+      images:
+        type: array
+        items:
+          type: string
+
+  ProductListResponse:
+    type: object
+    description: "Paginated list of products."
+    properties:
+      page:
+        type: integer
+        example: 1
+      limit:
+        type: integer
+        example: 20
+      total:
+        type: integer
+        example: 100
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/Product"
+
+  # ---------------------------
+  # Cart
+  # ---------------------------
+  CartItem:
+    type: object
+    description: "An item inside the shopping cart."
+    properties:
+      productId:
+        type: integer
+        example: 101
+      name:
+        type: string
+        example: Gold Ring
+      quantity:
+        type: integer
+        example: 2
+      price:
+        type: number
+        format: float
+        example: 1499.75
+      subtotal:
+        type: number
+        format: float
+        example: 2999.50
+
+  Cart:
+    type: object
+    description: "Shopping cart belonging to a user."
+    properties:
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/CartItem"
+      totalPrice:
+        type: number
+        format: float
+        example: 2999.50
+
+  CartItemRequest:
+    type: object
+    description: "Payload to add a product to cart."
+    required: [productId, quantity]
+    properties:
+      productId:
+        type: integer
+      quantity:
+        type: integer
+        minimum: 1
+
+  CartItemUpdateRequest:
+    type: object
+    description: "Payload to update cart item quantity."
+    required: [productId, quantity]
+    properties:
+      productId:
+        type: integer
+      quantity:
+        type: integer
+        minimum: 1
+
+  # ---------------------------
+  # Order
+  # ---------------------------
+  Order:
+    type: object
+    description: "Represents a purchase order."
+    properties:
+      id:
+        type: integer
+        example: 5001
+      userId:
+        type: integer
+        example: 101
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/CartItem"
+      totalPrice:
+        type: number
+        format: float
+        example: 2999.50
+      status:
+        type: string
+        enum: [pending, paid, shipped, delivered, cancelled]
+        example: pending
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+
+  OrderCreateRequest:
+    type: object
+    description: "Request to create a new order."
+    required: [shippingAddressId, paymentMethod]
+    properties:
+      shippingAddressId:
+        type: integer
+        example: 2001
+      paymentMethod:
+        type: string
+        enum: [cod, card, netbanking, upi]
+        example: upi
+
+  OrderListResponse:
+    type: object
+    description: "Paginated list of orders."
+    properties:
+      page:
+        type: integer
+      limit:
+        type: integer
+      total:
+        type: integer
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/Order"
+
+  # ---------------------------
+  # Payment
+  # ---------------------------
+  Payment:
+    type: object
+    description: "Represents a payment transaction."
+    properties:
+      id:
+        type: string
+      orderId:
+        type: integer
+      userId:
+        type: integer
+      amount:
+        type: number
+        format: float
+      currency:
+        type: string
+      method:
+        type: string
+      status:
+        type: string
+      transactionId:
+        type: string
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+
+  PaymentInitiateRequest:
+    type: object
+    description: "Request to initiate a payment."
+    required: [orderId, method]
+    properties:
+      orderId:
+        type: integer
+      method:
+        type: string
+
+  PaymentInitiateResponse:
+    type: object
+    description: "Response after payment initiation."
+    properties:
+      paymentId:
+        type: string
+      gatewayUrl:
+        type: string
+      status:
+        type: string
+
+  PaymentConfirmRequest:
+    type: object
+    description: "Request to confirm a payment."
+    required: [transactionId, status]
+    properties:
+      transactionId:
+        type: string
+      status:
+        type: string
+      signature:
+        type: string
+
+  RefundRequest:
+    type: object
+    description: "Request to process a refund."
+    required: [amount, reason]
+    properties:
+      amount:
+        type: number
+        format: float
+      reason:
+        type: string
+
+  # ---------------------------
+  # Address & Shipping
+  # ---------------------------
+  Address:
+    type: object
+    description: "Represents a user shipping address."
+    required: [id, userId, addressLine1, city, state, zip, country]
+    properties:
+      id:
+        type: integer
+      userId:
+        type: integer
+      addressLine1:
+        type: string
+      addressLine2:
+        type: string
+      city:
+        type: string
+      state:
+        type: string
+      zip:
+        type: string
+      country:
+        type: string
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+
+  AddressCreateRequest:
+    type: object
+    description: "Payload to add a new address."
+    required: [addressLine1, city, state, zip, country]
+    properties:
+      addressLine1:
+        type: string
+      addressLine2:
+        type: string
+      city:
+        type: string
+      state:
+        type: string
+      zip:
+        type: string
+      country:
+        type: string
+
+  AddressUpdateRequest:
+    type: object
+    description: "Payload to update an existing address."
+    properties:
+      addressLine1:
+        type: string
+      addressLine2:
+        type: string
+      city:
+        type: string
+      state:
+        type: string
+      zip:
+        type: string
+      country:
+        type: string
+
+  ShippingOption:
+    type: object
+    description: "Represents available shipping option."
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      estimatedDays:
+        type: integer
+      cost:
+        type: number
+        format: float
+
+  Tracking:
+    type: object
+    description: "Represents order tracking details."
+    properties:
+      orderId:
+        type: integer
+      status:
+        type: string
+        enum: [pending, dispatched, in_transit, delivered, cancelled]
+      carrier:
+        type: string
+      trackingNumber:
+        type: string
+      estimatedDelivery:
+        type: string
+        format: date-time
+
+  # ---------------------------
+  # Common Error
+  # ---------------------------
+  ErrorResponse:
+    type: object
+    description: "Standard error response."
+    required: [error, message]
+    properties:
+      error:
+        type: string
+        example: BadRequest
+      message:
+        type: string
+        example: Invalid request parameters
+
+  Principal:
+    properties:
+      crn:
+        description: Workaround for AT event tracker
+        type: string
+      region:
+        description: Workaround for API's not having region in their context
+        type: string
+      token:
+        $ref: '#/definitions/Token'
+        description: OAuth2 Token
+      userAccess:
+        $ref: '#/definitions/UserAccess'
+        description: User Access
+      userEmail:
+        description: Email of User
+        type: string
+      userID:
+        description: ID of User
+        type: string
+      userInfo:
+        $ref: '#/definitions/UserAuthenticationInfo'
+        description: Object that keeps track of user authentication info
+      authName:
+        type: string
+      authEmail:
+        type: string
+      authId:
+        type: string
+    type: object
+
+  Token:
+    properties:
+      accessToken:
+        description: AccessToken
+        type: string
+      expires:
+        description: Token Expires
+        format: date-time
+        type: string
+      refreshToken:
+        description: Refresh Token
+        type: string
+      type:
+        description: Token Type
+        type: string
+    required:
+    - accessToken
+    - type
+    - refreshToken
+    - expires
+    type: object
+
+  UserAccess:
+    description: Keeps tracks of individual user's access and roles
+    properties:
+      _id:
+        description: User ID
+        type: string
+        x-go-custom-tag: datastore:"id"
+        x-go-name: UserID
+      _rev:
+        type: string
+        x-go-custom-tag: datastore:"-"
+      baseRole:
+        default: user-readonly
+        description: Base Role for this User
+        enum:
+        - user-admin
+        - user-readonly
+        - service-admin
+        - service-readonly
+        - disabled
+        - pending
+        type: string
+        x-go-custom-tag: datastore:"baseRole"
+        x-isnullable: false
+      memberOf:
+        description: Member of (Tenants)
+        items:
+          type: string
+        type: array
+        x-go-custom-tag: datastore:"memberOf"
+      notes:
+        description: Notes for development (not used internally)
+        type: string
+        x-go-custom-tag: datastore:"notes,noindex,omitempty"
+    type: object
+  UserAuthenticationInfo:
+    properties:
+      credentialType:
+        description: Workaround for AT event tracker
+        type: string
+    type: object

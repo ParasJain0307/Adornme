@@ -2,6 +2,7 @@ package database
 
 import (
 	log "Adornme/logging"
+	utils "Adornme/utils"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -13,12 +14,12 @@ import (
 var (
 	Do   map[string]DatabaseProvider // registry of all DBs
 	once sync.Once
-	ctx  = log.WithRequestID(context.Background(), "req-12345")
+	Ctx  context.Context
 	logs = log.Component("database")
 )
 
 type DatabaseProvider interface {
-	HealthCheck(ctx context.Context) error
+	HealthCheck(Ctx context.Context) error
 	Close() error
 }
 
@@ -26,15 +27,22 @@ type DatabaseProvider interface {
 func init() {
 	once.Do(func() {
 		Do = make(map[string]DatabaseProvider)
+		// format: podId-YYYYMMDD-HHMMSS
+		podID := utils.GetPodID()
+		timestamp := time.Now().Format("20060102-150405")
+		instanceID := fmt.Sprintf("%s-%s", podID, timestamp)
+
+		// attach instanceID to request context
+		Ctx = log.WithRequestID(context.Background(), instanceID)
 		if err := setupDatabases("config/db-config.json"); err != nil {
-			logs.Fatalf(ctx, "DB initialization failed: %v", err)
+			logs.Fatalf(Ctx, "DB initialization failed: %v", err)
 		}
 	})
 }
 
 // Setup databases from JSON config
 func setupDatabases(cfgPath string) error {
-	logs.Noticef(ctx, "Setup Databases Called!")
+	logs.Noticef(Ctx, "Setup Databases Called!")
 	data, err := os.ReadFile(cfgPath)
 	if err != nil {
 		return fmt.Errorf("cannot read db-config.json: %w", err)
@@ -107,18 +115,7 @@ func setupDatabases(cfgPath string) error {
 func CloseAll() {
 	for name, db := range Do {
 		if err := db.Close(); err != nil {
-			logs.Errorf(ctx, "Error closing %s: %v\n", name, err)
-		}
-	}
-}
-
-// Health check for all DBs
-func CheckAll(ctx context.Context) {
-	for name, db := range Do {
-		if err := db.HealthCheck(ctx); err != nil {
-			logs.Errorf(ctx, "%s unhealthy: %v\n", name, err)
-		} else {
-			logs.Infof(ctx, "%s healthy ✅\n", name)
+			logs.Errorf(Ctx, "Error closing %s: %v\n", name, err)
 		}
 	}
 }

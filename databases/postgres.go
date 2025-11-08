@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -69,6 +68,7 @@ type postgresConfig struct {
 
 func connectPostgres(raw json.RawMessage) (*PostgresProvider, error) {
 	var cfg postgresConfig
+
 	if err := json.Unmarshal(raw, &cfg); err != nil {
 		return nil, err
 	}
@@ -108,78 +108,14 @@ func connectPostgres(raw json.RawMessage) (*PostgresProvider, error) {
 		return nil, err
 	}
 
-	log.Println("Postgres connected ✅")
+	logs.Infof(Ctx, "Postgres connected ✅ for %v", dbName)
 	// run migrations
 	m := migrations.NewMigrator(pool)
 	if err := m.Migrate(ctx, dbName); err != nil {
 		logs.Errorf(ctx, "migration failed:%v", err)
 	}
-	logs.Infof(ctx, "migration successful for db:%v", dbName)
+	logs.Infof(Ctx, "migration successful for db:%v", dbName)
 	return &PostgresProvider{Pool: pool}, nil
-}
-
-// ------------------------
-// AutoMigrate SQL
-// ------------------------
-func AutoMigrate(ctx context.Context, db *PostgresProvider) error {
-	statements := []string{
-		// ----------------- Users -----------------
-		`CREATE TABLE IF NOT EXISTS users (
-			id SERIAL PRIMARY KEY,
-			name TEXT NOT NULL,
-			email TEXT UNIQUE NOT NULL,
-			password TEXT NOT NULL,
-			created_at TIMESTAMP NOT NULL,
-			updated_at TIMESTAMP
-		)`,
-
-		// ----------------- Products -----------------
-		`CREATE TABLE IF NOT EXISTS products (
-			id SERIAL PRIMARY KEY,
-			name TEXT NOT NULL,
-			description TEXT,
-			price NUMERIC NOT NULL,
-			inventory INT NOT NULL DEFAULT 0,
-			created_at TIMESTAMP NOT NULL,
-			updated_at TIMESTAMP
-		)`,
-
-		// ----------------- Orders -----------------
-		`CREATE TABLE IF NOT EXISTS orders (
-			id SERIAL PRIMARY KEY,
-			user_id INT REFERENCES users(id),
-			total NUMERIC NOT NULL,
-			status TEXT NOT NULL DEFAULT 'Pending',
-			created_at TIMESTAMP NOT NULL,
-			updated_at TIMESTAMP
-		)`,
-
-		// ----------------- Order Items -----------------
-		`CREATE TABLE IF NOT EXISTS order_items (
-			id SERIAL PRIMARY KEY,
-			order_id INT REFERENCES orders(id) ON DELETE CASCADE,
-			product_id INT REFERENCES products(id),
-			quantity INT NOT NULL,
-			price NUMERIC NOT NULL
-		)`,
-
-		// ----------------- Inventory -----------------
-		`CREATE TABLE IF NOT EXISTS inventory (
-			id SERIAL PRIMARY KEY,
-			product_id INT REFERENCES products(id),
-			quantity INT NOT NULL,
-			updated_at TIMESTAMP NOT NULL
-		)`,
-	}
-
-	for _, stmt := range statements {
-		if _, err := db.Pool.Exec(ctx, stmt); err != nil {
-			return fmt.Errorf("AutoMigrate failed: %w", err)
-		}
-	}
-
-	log.Println("AutoMigrate completed ✅")
-	return nil
 }
 
 // Connect all Postgres components
@@ -211,6 +147,6 @@ func ConnectAllPostgres(configs map[string]json.RawMessage) (*PostgresClients, e
 			return nil, err
 		}
 	}
-	logs.Info(ctx, "All Postgres Connection Made Successfully")
+	logs.Info(Ctx, "All Postgres Connection Made Successfully")
 	return clients, nil
 }

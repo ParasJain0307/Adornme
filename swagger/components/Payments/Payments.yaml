@@ -1,0 +1,101 @@
+paths:
+  /payments/initiate:
+    post:
+      operationId: initiatePayment
+      tags: [Payments]
+      summary: Initiate a new payment
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/PaymentInitiateRequest"
+      responses:
+        201:
+          description: Payment initiated
+          schema:
+            $ref: "#/definitions/PaymentInitiateResponse"
+        400:
+          description: Invalid request
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /payments/{id}:
+    get:
+      operationId: getPayment
+      tags: [Payments]
+      summary: Get payment details
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: true
+      responses:
+        200:
+          description: Payment details
+          schema:
+            $ref: "#/definitions/Payment"
+        404:
+          description: Payment not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /payments/{id}/confirm:
+    post:
+      operationId: confirmPayment
+      tags: [Payments]
+      summary: Confirm a payment
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: true
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/PaymentConfirmRequest"
+      responses:
+        200:
+          description: Payment confirmed
+          schema:
+            $ref: "#/definitions/Payment"
+        400:
+          description: Invalid confirmation data
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /payments/{id}/refund:
+    post:
+      operationId: refundPayment
+      tags: [Payments]
+      summary: Refund a payment
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: true
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/RefundRequest"
+      responses:
+        200:
+          description: Refund processed
+          schema:
+            $ref: "#/definitions/Payment"
+        400:
+          description: Invalid refund request
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          description: Payment not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"

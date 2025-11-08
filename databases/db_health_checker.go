@@ -8,6 +8,8 @@ import (
 )
 
 func StartDBHealthTicker(interval time.Duration, stopCh <-chan struct{}) {
+
+	
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
@@ -21,9 +23,9 @@ func StartDBHealthTicker(interval time.Duration, stopCh <-chan struct{}) {
 				})
 				cancel()
 				if err != nil {
-					logs.Warningf(ctx, "%s health check failed: %v", name, err)
+					logs.Warningf(Ctx, "%s health check failed: %v", name, err)
 				} else {
-					logs.Infof(ctx, "%s healthy ✅", name)
+					logs.Infof(Ctx, "%s healthy ✅", name)
 				}
 			}
 		case <-stopCh:

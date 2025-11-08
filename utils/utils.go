@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"context"
 	"log"
+	"os"
 	"time"
 )
 
@@ -16,4 +18,25 @@ func Retry(attempts int, delay time.Duration, fn func() error) error {
 		time.Sleep(delay)
 	}
 	return err
+}
+
+func GetPodID() string {
+	if podID := os.Getenv("POD_ID"); podID != "" {
+		return podID
+	}
+	if hostname, err := os.Hostname(); err == nil {
+		return hostname
+	}
+	return "pod-unknown"
+}
+
+func WithRequestID(ctx context.Context, requestID string) context.Context {
+	return context.WithValue(ctx, "requestID", requestID)
+}
+
+func RequestIDFromContext(ctx context.Context) string {
+	if v := ctx.Value("requestID"); v != nil {
+		return v.(string)
+	}
+	return ""
 }

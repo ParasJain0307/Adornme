@@ -1,0 +1,63 @@
+paths:
+  /cart:
+    get:
+      operationId: getCart
+      summary: Get current user's cart
+      tags: [Cart]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Current shopping cart
+          schema:
+            $ref: "#/definitions/Cart"
+        401:
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+    post:
+      operationId: addItemToCart
+      summary: Add item to cart
+      tags: [Cart]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/CartItemRequest"
+      responses:
+        200:
+          description: Item added to cart
+          schema:
+            $ref: "#/definitions/Cart"
+
+    put:
+      operationId: updateCartItem
+      summary: Update item quantity in cart
+      tags: [Cart]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/CartItemUpdateRequest"
+      responses:
+        200:
+          description: Cart updated
+          schema:
+            $ref: "#/definitions/Cart"
+
+    delete:
+      operationId: clearCart
+      summary: Clear cart
+      tags: [Cart]
+      security:
+        - bearerAuth: []
+      responses:
+        204:
+          description: Cart cleared

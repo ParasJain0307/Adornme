@@ -1,0 +1,120 @@
+paths:
+  /shipping/addresses:
+    get:
+      operationId: listShippingAddresses
+      tags: [Shipping]
+      summary: Get all addresses for logged-in user
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: List of user addresses
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Address"
+        401:
+          description: Unauthorized
+
+    post:
+      operationId: addShippingAddress
+      tags: [Shipping]
+      summary: Add a new shipping address
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/AddressCreateRequest"
+      responses:
+        201:
+          description: Address added successfully
+          schema:
+            $ref: "#/definitions/Address"
+        400:
+          description: Validation error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /shipping/addresses/{id}:
+    put:
+      operationId: updateShippingAddress
+      tags: [Shipping]
+      summary: Update a shipping address
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/AddressUpdateRequest"
+      responses:
+        200:
+          description: Address updated
+          schema:
+            $ref: "#/definitions/Address"
+        404:
+          description: Address not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+    delete:
+      operationId: deleteShippingAddress
+      tags: [Shipping]
+      summary: Delete a shipping address
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+      responses:
+        204:
+          description: Address deleted
+        404:
+          description: Address not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /shipping/options:
+    get:
+      operationId: listShippingOptions
+      tags: [Shipping]
+      summary: Get available shipping options
+      responses:
+        200:
+          description: List of shipping options
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/ShippingOption"
+
+  /shipping/track/{orderId}:
+    get:
+      operationId: trackShipment
+      tags: [Shipping]
+      summary: Track shipment for an order
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: orderId
+          type: integer
+          required: true
+      responses:
+        200:
+          description: Shipment tracking details
+          schema:
+            $ref: "#/definitions/Tracking"
+        404:
+          description: Order or shipment not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"

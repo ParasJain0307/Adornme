@@ -102,7 +102,6 @@ var (
 )
 
 func init() {
-	// Automatic initialization with default path
 	if err := Init("config/logging-level.json"); err != nil {
 		log.Printf("Logging auto-init failed: %v\n", err)
 	}
@@ -112,7 +111,6 @@ func init() {
 func Init(configPath string) error {
 	var err error
 	once.Do(func() {
-		// Load config
 		configFile, e := os.Open(configPath)
 		if e != nil {
 			err = fmt.Errorf("failed to open logging config: %w", e)
@@ -135,7 +133,6 @@ func Init(configPath string) error {
 			}
 		}
 
-		// Initialize static loggers
 		Database = setupLogger("database")
 		RestAPI = setupLogger("restapi")
 		Orders = setupLogger("orders")
@@ -182,11 +179,12 @@ func setupLogger(component string) *Logger {
 
 	fileWriter := &lumberjack.Logger{
 		Filename:   filepath.Join("logs", component+".log"),
-		MaxSize:    10,
-		MaxBackups: 5,
-		MaxAge:     28,
-		Compress:   true,
+		MaxSize:    1,    // 1 MB for testing, rotate quickly
+		MaxBackups: 5,    // keep last 5 rotated files
+		MaxAge:     7,    // keep for 7 days
+		Compress:   true, // compress old files
 	}
+
 	fileLogger := log.New(fileWriter, "", 0)
 	consoleLogger := log.New(os.Stdout, "", 0)
 
@@ -209,19 +207,19 @@ func setupLogger(component string) *Logger {
 func levelColor(level Level) string {
 	switch level {
 	case DEBUG:
-		return "\033[36m" // Cyan
+		return "\033[36m"
 	case INFO:
-		return "\033[32m" // Green
+		return "\033[32m"
 	case NOTICE:
-		return "\033[34m" // Blue
+		return "\033[34m"
 	case WARNING:
-		return "\033[33m" // Yellow
+		return "\033[33m"
 	case ERROR:
-		return "\033[31m" // Red
+		return "\033[31m"
 	case CRITICAL:
-		return "\033[35m" // Magenta
+		return "\033[35m"
 	case FATAL:
-		return "\033[41m" // Red BG
+		return "\033[41m"
 	case PANIC:
 		return "\033[41;37m"
 	default:
@@ -230,17 +228,29 @@ func levelColor(level Level) string {
 }
 
 // -------------------- CORE LOG --------------------
-func (l *Logger) log(ctx context.Context, level Level, msg string) {
+func (l *Logger) log(ctx context.Context, level Level, msg string, kv ...any) {
 	if level < l.minLevel {
 		return
 	}
+
+	// Append key-value pairs
+	if len(kv) > 0 {
+		if len(kv)%2 != 0 {
+			kv = append(kv, "<missing>")
+		}
+		var parts []string
+		for i := 0; i < len(kv); i += 2 {
+			parts = append(parts, fmt.Sprintf("%v=%v", kv[i], kv[i+1]))
+		}
+		msg = msg + " | " + strings.Join(parts, " ")
+	}
+
 	pc, file, line, ok := runtime.Caller(2)
 	funcName := "-"
 	if ok {
 		if fn := runtime.FuncForPC(pc); fn != nil {
-			fullName := fn.Name() // e.g. "github.com/yourorg/Adornme/databases.connectOpenSearch"
-			parts := strings.Split(fullName, ".")
-			funcName = parts[len(parts)-1] // take only the last part
+			parts := strings.Split(fn.Name(), ".")
+			funcName = parts[len(parts)-1]
 		}
 		file = filepath.Base(file)
 	}
@@ -274,11 +284,10 @@ func (l *Logger) log(ctx context.Context, level Level, msg string) {
 		Message:   defaultIfEmpty(msg),
 	}
 
-	// JSON log (structured)
+	// JSON log
 	jsonData, _ := json.Marshal(entry)
 	l.file.Println(string(jsonData))
 
-	// Console log with |line|
 	color := levelColor(level)
 	consoleMsg := fmt.Sprintf(
 		"%s|%s|%s|%s|%s|%s|%s|%s|%d|%s",
@@ -304,14 +313,16 @@ func defaultIfEmpty(s string) string {
 }
 
 // -------------------- PUBLIC METHODS --------------------
-func (l *Logger) Debug(ctx context.Context, msg string)    { l.log(ctx, DEBUG, msg) }
-func (l *Logger) Info(ctx context.Context, msg string)     { l.log(ctx, INFO, msg) }
-func (l *Logger) Notice(ctx context.Context, msg string)   { l.log(ctx, NOTICE, msg) }
-func (l *Logger) Warning(ctx context.Context, msg string)  { l.log(ctx, WARNING, msg) }
-func (l *Logger) Error(ctx context.Context, msg string)    { l.log(ctx, ERROR, msg) }
-func (l *Logger) Critical(ctx context.Context, msg string) { l.log(ctx, CRITICAL, msg) }
-func (l *Logger) Fatal(ctx context.Context, msg string)    { l.log(ctx, FATAL, msg) }
-func (l *Logger) Panic(ctx context.Context, msg string)    { l.log(ctx, PANIC, msg) }
+func (l *Logger) Debug(ctx context.Context, msg string, kv ...any)   { l.log(ctx, DEBUG, msg, kv...) }
+func (l *Logger) Info(ctx context.Context, msg string, kv ...any)    { l.log(ctx, INFO, msg, kv...) }
+func (l *Logger) Notice(ctx context.Context, msg string, kv ...any)  { l.log(ctx, NOTICE, msg, kv...) }
+func (l *Logger) Warning(ctx context.Context, msg string, kv ...any) { l.log(ctx, WARNING, msg, kv...) }
+func (l *Logger) Error(ctx context.Context, msg string, kv ...any)   { l.log(ctx, ERROR, msg, kv...) }
+func (l *Logger) Critical(ctx context.Context, msg string, kv ...any) {
+	l.log(ctx, CRITICAL, msg, kv...)
+}
+func (l *Logger) Fatal(ctx context.Context, msg string, kv ...any) { l.log(ctx, FATAL, msg, kv...) }
+func (l *Logger) Panic(ctx context.Context, msg string, kv ...any) { l.log(ctx, PANIC, msg, kv...) }
 
 // -------------------- FORMATTED METHODS --------------------
 func (l *Logger) Debugf(ctx context.Context, f string, v ...any) {

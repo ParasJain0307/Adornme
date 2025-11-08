@@ -44,7 +44,7 @@ func connectOpenSearch(raw json.RawMessage) (*OpenSearchProvider, error) {
 			},
 		})
 		if err != nil {
-			logs.Errorf(ctx, "OpenSearch client creation failed: %v. Retrying...\n", err)
+			logs.Errorf(Ctx, "OpenSearch client creation failed: %v. Retrying...\n", err)
 			time.Sleep(2 * time.Second)
 			continue
 		}
@@ -55,11 +55,11 @@ func connectOpenSearch(raw json.RawMessage) (*OpenSearchProvider, error) {
 		res, pingErr := client.Cluster.Health()
 		if pingErr == nil {
 			defer res.Body.Close()
-			logs.Info(ctx, "OpenSearch connected ✅")
+			logs.Info(Ctx, "OpenSearch connected ✅")
 			return &OpenSearchProvider{Client: client}, nil
 		}
 
-		logs.Warningf(ctx, "OpenSearch not ready: %v. Retrying...\n", pingErr)
+		logs.Warningf(Ctx, "OpenSearch not ready: %v. Retrying...\n", pingErr)
 		time.Sleep(2 * time.Second)
 	}
 

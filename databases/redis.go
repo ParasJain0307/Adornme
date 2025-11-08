@@ -54,11 +54,11 @@ func connectRedis(raw json.RawMessage) (*RedisProvider, error) {
 
 		err = client.Ping(ctx).Err()
 		if err == nil {
-			logs.Info(ctx, "Redis connected ✅")
+			logs.Info(Ctx, "Redis connected ✅")
 			return &RedisProvider{Client: client}, nil
 		}
 
-		logs.Warningf(ctx, "Redis not ready (%v), retrying in 2s...\n", err)
+		logs.Warningf(Ctx, "Redis not ready (%v), retrying in 2s...\n", err)
 		time.Sleep(2 * time.Second)
 	}
 
