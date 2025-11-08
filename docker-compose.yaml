@@ -16,7 +16,7 @@ services:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
-      - DISABLE_SECURITY_PLUGIN=true    # <--- this disables the security plugin completely
+      - DISABLE_SECURITY_PLUGIN=true
     ulimits:
       memlock:
         soft: -1
@@ -27,9 +27,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep green"]
       interval: 30s
-      retries: 5
-
-  
+      retries: 10
 
   # ----------------------------
   # MinIO
@@ -49,7 +47,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
       interval: 30s
-      retries: 5
+      retries: 10
 
   # ----------------------------
   # Redis
@@ -62,7 +60,7 @@ services:
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 30s
-      retries: 5
+      retries: 10
 
   # ----------------------------
   # MongoDB
@@ -80,7 +78,7 @@ services:
     healthcheck:
       test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
       interval: 30s
-      retries: 5
+      retries: 10
 
   # ----------------------------
   # PostgreSQL
@@ -99,4 +97,29 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 30s
-      retries: 5
+      retries: 10
+
+  # ----------------------------
+  # Adornme application
+  # ----------------------------
+  adornme:
+    build: .
+    container_name: adornme
+    ports:
+      - "9090:9090"
+    depends_on:
+      opensearch:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      SKIPAUTH: "true"
+    volumes:
+      - ./config:/app/config
+
