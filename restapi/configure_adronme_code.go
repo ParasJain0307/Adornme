@@ -31,6 +31,7 @@ func configureFlags(api *operations.AdronmeCodeAPI) {
 }
 
 func configureAPI(api *operations.AdronmeCodeAPI) http.Handler {
+
 	// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -215,6 +216,8 @@ func configureAPI(api *operations.AdronmeCodeAPI) http.Handler {
 	api.PreServerShutdown = func() {}
 
 	api.ServerShutdown = func() {}
+
+	api.UseSwaggerUI()
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }
