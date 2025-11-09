@@ -626,7 +626,7 @@ definitions:
         type: string
     type: object
 info:
-  title: Servicebroker
+  title: Adornme
   version: 1.0.0
 paths:
   /auth/forgot-password:

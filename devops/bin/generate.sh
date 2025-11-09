@@ -146,7 +146,7 @@ if [ ${#ALL_YAML_FILES[@]} -gt 0 ]; then
     # Ensure .info section exists
     if ! grep -q '^info:' swagger/swagger.yaml; then
         echo "Adding .info section to swagger.yaml"
-        yq eval '.info = {"title": "Servicebroker", "version": "1.0.0"}' -i swagger/swagger.yaml
+        yq eval '.info = {"title": "Adornme", "version": "1.0.0"}' -i swagger/swagger.yaml
     fi
 
     # Sort keys

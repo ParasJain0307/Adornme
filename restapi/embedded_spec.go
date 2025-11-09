@@ -23,7 +23,7 @@ func init() {
   ],
   "swagger": "2.0",
   "info": {
-    "title": "Servicebroker",
+    "title": "Adornme",
     "version": "1.0.0"
   },
   "paths": {
@@ -1931,7 +1931,7 @@ func init() {
   ],
   "swagger": "2.0",
   "info": {
-    "title": "Servicebroker",
+    "title": "Adornme",
     "version": "1.0.0"
   },
   "paths": {
