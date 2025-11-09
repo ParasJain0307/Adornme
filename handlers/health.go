@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	ad "Adornme/cmd/app"
 	database "Adornme/databases"
 	"Adornme/logging"
 	"Adornme/restapi/operations/system"
@@ -17,8 +18,8 @@ import (
 func GetHealth(params system.GetHealthParams) middleware.Responder {
 	requestID := uuid.New().String()
 	ctx := logging.WithRequestID(context.Background(), requestID)
-	startTime := time.Now()
-	logs.Infof(ctx, "Starting system health check at %v", startTime)
+	startCheck := time.Now()
+	logs.Infof(ctx, "Starting system health check at %v", startCheck)
 
 	dependencies := make(map[string]system.GetHealthOKBodyDependenciesAnon)
 	overallHealthy := true
@@ -46,7 +47,7 @@ func GetHealth(params system.GetHealthParams) middleware.Responder {
 			})
 		}
 
-		cancel()
+		cancel() // cancel context immediately
 
 		lastChecked := strfmt.DateTime(time.Now().UTC())
 
@@ -69,7 +70,7 @@ func GetHealth(params system.GetHealthParams) middleware.Responder {
 		}
 	}
 
-	// Determine overall system health
+	// Overall system status
 	status := "ok"
 	description := "All dependencies are healthy and running smoothly"
 	if !overallHealthy {
@@ -77,14 +78,21 @@ func GetHealth(params system.GetHealthParams) middleware.Responder {
 		description = "Some dependencies are unhealthy — check logs for details"
 	}
 
-	appUptime := time.Since(startTime).Truncate(time.Second).String()
+	// Calculate real application uptime from AppStartTime
+	appUptime := time.Since(ad.AppStartTime).Truncate(time.Second).String()
 
 	resp := &system.GetHealthOKBody{
-		Status:       status,
-		Description:  description,
-		Timestamp:    strfmt.DateTime(time.Now().UTC()), // ✅ FIXED — use strfmt.DateTime
-		Uptime:       appUptime,
-		Dependencies: dependencies,
+		Status:      status,
+		Description: description,
+		Timestamp:   strfmt.DateTime(time.Now().UTC()),
+		Uptime:      appUptime,
+		Dependencies: func() map[string]system.GetHealthOKBodyDependenciesAnon {
+			depMap := make(map[string]system.GetHealthOKBodyDependenciesAnon)
+			for name, info := range dependencies {
+				depMap[name] = info
+			}
+			return depMap
+		}(),
 	}
 
 	logs.Infof(ctx, "Health check completed: %+v", resp)
