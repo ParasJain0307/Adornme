@@ -1,0 +1,25 @@
+paths:
+  /health:
+    get:
+      tags:
+        - System
+      summary: Health check endpoint
+      description: Returns 200 OK if the Adornme is healthy.
+      operationId: getHealth
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Adronme Service is healthy
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: ok
+              description:
+                type: string
+                example: Service is Healthy and ready to serve
+              timestamp:
+                type: string
+                example: Timestamp of Health

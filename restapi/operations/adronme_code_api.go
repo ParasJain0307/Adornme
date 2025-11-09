@@ -26,6 +26,7 @@ import (
 	"Adornme/restapi/operations/orders"
 	"Adornme/restapi/operations/payments"
 	"Adornme/restapi/operations/shipping"
+	"Adornme/restapi/operations/system"
 	"Adornme/restapi/operations/users"
 )
 
@@ -77,6 +78,9 @@ func NewAdronmeCodeAPI(spec *loads.Document) *AdronmeCodeAPI {
 		}),
 		CartGetCartHandler: cart.GetCartHandlerFunc(func(params cart.GetCartParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation cart.GetCart has not yet been implemented")
+		}),
+		SystemGetHealthHandler: system.GetHealthHandlerFunc(func(params system.GetHealthParams) middleware.Responder {
+			return middleware.NotImplemented("operation system.GetHealth has not yet been implemented")
 		}),
 		OrdersGetOrderHandler: orders.GetOrderHandlerFunc(func(params orders.GetOrderParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation orders.GetOrder has not yet been implemented")
@@ -209,6 +213,8 @@ type AdronmeCodeAPI struct {
 	AdminUsersDeleteUserHandler admin_users.DeleteUserHandler
 	// CartGetCartHandler sets the operation handler for the get cart operation
 	CartGetCartHandler cart.GetCartHandler
+	// SystemGetHealthHandler sets the operation handler for the get health operation
+	SystemGetHealthHandler system.GetHealthHandler
 	// OrdersGetOrderHandler sets the operation handler for the get order operation
 	OrdersGetOrderHandler orders.GetOrderHandler
 	// PaymentsGetPaymentHandler sets the operation handler for the get payment operation
@@ -358,6 +364,9 @@ func (o *AdronmeCodeAPI) Validate() error {
 	}
 	if o.CartGetCartHandler == nil {
 		unregistered = append(unregistered, "cart.GetCartHandler")
+	}
+	if o.SystemGetHealthHandler == nil {
+		unregistered = append(unregistered, "system.GetHealthHandler")
 	}
 	if o.OrdersGetOrderHandler == nil {
 		unregistered = append(unregistered, "orders.GetOrderHandler")
@@ -557,6 +566,10 @@ func (o *AdronmeCodeAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/cart"] = cart.NewGetCart(o.context, o.CartGetCartHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/health"] = system.NewGetHealth(o.context, o.SystemGetHealthHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}

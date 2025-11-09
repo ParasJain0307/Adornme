@@ -281,6 +281,41 @@ func init() {
         }
       }
     },
+    "/health": {
+      "get": {
+        "description": "Returns 200 OK if the Adornme is healthy.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "System"
+        ],
+        "summary": "Health check endpoint",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Adronme Service is healthy",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "description": {
+                  "type": "string",
+                  "example": "Service is Healthy and ready to serve"
+                },
+                "status": {
+                  "type": "string",
+                  "example": "ok"
+                },
+                "timestamp": {
+                  "type": "string",
+                  "example": "Timestamp of Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/orders": {
       "get": {
         "security": [
@@ -2185,6 +2220,41 @@ func init() {
         "responses": {
           "204": {
             "description": "Cart cleared"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "description": "Returns 200 OK if the Adornme is healthy.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "System"
+        ],
+        "summary": "Health check endpoint",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Adronme Service is healthy",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "description": {
+                  "type": "string",
+                  "example": "Service is Healthy and ready to serve"
+                },
+                "status": {
+                  "type": "string",
+                  "example": "ok"
+                },
+                "timestamp": {
+                  "type": "string",
+                  "example": "Timestamp of Health"
+                }
+              }
+            }
           }
         }
       }

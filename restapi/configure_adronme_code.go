@@ -21,6 +21,7 @@ import (
 	"Adornme/restapi/operations/orders"
 	"Adornme/restapi/operations/payments"
 	"Adornme/restapi/operations/shipping"
+	"Adornme/restapi/operations/system"
 	"Adornme/restapi/operations/users"
 )
 
@@ -177,6 +178,8 @@ func configureAPI(api *operations.AdronmeCodeAPI) http.Handler {
 
 	api.UsersLoginUserHandler = users.LoginUserHandlerFunc(handlers.LoginUser)
 
+	api.SystemGetHealthHandler = system.GetHealthHandlerFunc(handlers.GetHealth)
+
 	if api.UsersRequestPasswordResetHandler == nil {
 		api.UsersRequestPasswordResetHandler = users.RequestPasswordResetHandlerFunc(func(params users.RequestPasswordResetParams) middleware.Responder {
 			return middleware.NotImplemented("operation users.RequestPasswordReset has not yet been implemented")
@@ -202,6 +205,7 @@ func configureAPI(api *operations.AdronmeCodeAPI) http.Handler {
 			return middleware.NotImplemented("operation admin_products.UpdateProduct has not yet been implemented")
 		})
 	}
+
 	if api.ShippingUpdateShippingAddressHandler == nil {
 		api.ShippingUpdateShippingAddressHandler = shipping.UpdateShippingAddressHandlerFunc(func(params shipping.UpdateShippingAddressParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation shipping.UpdateShippingAddress has not yet been implemented")

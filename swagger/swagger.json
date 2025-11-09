@@ -1126,6 +1126,41 @@
         ]
       }
     },
+    "/health": {
+      "get": {
+        "description": "Returns 200 OK if the Adornme is healthy.",
+        "operationId": "getHealth",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Adronme Service is healthy",
+            "schema": {
+              "properties": {
+                "description": {
+                  "example": "Service is Healthy and ready to serve",
+                  "type": "string"
+                },
+                "status": {
+                  "example": "ok",
+                  "type": "string"
+                },
+                "timestamp": {
+                  "example": "Timestamp of Health",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "summary": "Health check endpoint",
+        "tags": [
+          "System"
+        ]
+      }
+    },
     "/orders": {
       "get": {
         "operationId": "listOrders",
