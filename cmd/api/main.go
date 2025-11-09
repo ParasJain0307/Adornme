@@ -19,16 +19,18 @@ func main() {
 	server := restapi.NewServer(api)
 	defer server.Shutdown()
 
+	server.ConfigureAPI()
 	// Force HTTP (skip TLS entirely)
 	server.Host = "0.0.0.0"
 	server.Port = 8080
 	server.TLSCertificate = ""
 	server.TLSCertificateKey = ""
 
-	server.ConfigureAPI()
+	
 
 	log.Println("Server started at :8080 (HTTP)")
 	if err := server.Serve(); err != nil {
 		log.Fatalln(err)
 	}
 }
+

@@ -16,7 +16,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go application
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o adornme ./cmd/adronme-code-server/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o adornme ./cmd/api/main.go
 
 # ================================
 # Stage 2 — Create a minimal image
@@ -33,8 +33,7 @@ COPY --from=builder /app/adornme .
 COPY --from=builder /app/config ./config
 
 # Expose your application port
-EXPOSE 9090
+EXPOSE 8080
 
 # Run the binary
 ENTRYPOINT ["./adornme"]
-

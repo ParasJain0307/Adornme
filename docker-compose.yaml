@@ -71,7 +71,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongodata:/data/db
+      - ./mongodata:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
@@ -79,6 +79,7 @@ services:
       test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
       interval: 30s
       retries: 10
+
 
   # ----------------------------
   # PostgreSQL
@@ -106,13 +107,9 @@ services:
     build: .
     container_name: adornme
     ports:
-      - "9090:9090"
+      - "8080:8080"
     depends_on:
       opensearch:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-      mongo:
         condition: service_healthy
       redis:
         condition: service_healthy
