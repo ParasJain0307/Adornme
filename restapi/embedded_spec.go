@@ -283,7 +283,7 @@ func init() {
     },
     "/health": {
       "get": {
-        "description": "Returns 200 OK if the Adornme is healthy.",
+        "description": "Returns the overall system health status along with the health of individual dependencies like Redis, MongoDB, PostgreSQL, OpenSearch, and MinIO.\n",
         "produces": [
           "application/json"
         ],
@@ -294,13 +294,26 @@ func init() {
         "operationId": "getHealth",
         "responses": {
           "200": {
-            "description": "Adronme Service is healthy",
+            "description": "Adornme Service is healthy",
             "schema": {
               "type": "object",
               "properties": {
+                "dependencies": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "example": {
+                    "minio": "healthy",
+                    "mongodb": "healthy",
+                    "opensearch": "healthy",
+                    "postgres": "healthy",
+                    "redis": "healthy"
+                  }
+                },
                 "description": {
                   "type": "string",
-                  "example": "Service is Healthy and ready to serve"
+                  "example": "All dependencies are healthy"
                 },
                 "status": {
                   "type": "string",
@@ -308,7 +321,7 @@ func init() {
                 },
                 "timestamp": {
                   "type": "string",
-                  "example": "Timestamp of Health"
+                  "example": "2025-11-09T14:16:42Z"
                 }
               }
             }
@@ -2226,7 +2239,7 @@ func init() {
     },
     "/health": {
       "get": {
-        "description": "Returns 200 OK if the Adornme is healthy.",
+        "description": "Returns the overall system health status along with the health of individual dependencies like Redis, MongoDB, PostgreSQL, OpenSearch, and MinIO.\n",
         "produces": [
           "application/json"
         ],
@@ -2237,13 +2250,26 @@ func init() {
         "operationId": "getHealth",
         "responses": {
           "200": {
-            "description": "Adronme Service is healthy",
+            "description": "Adornme Service is healthy",
             "schema": {
               "type": "object",
               "properties": {
+                "dependencies": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "example": {
+                    "minio": "healthy",
+                    "mongodb": "healthy",
+                    "opensearch": "healthy",
+                    "postgres": "healthy",
+                    "redis": "healthy"
+                  }
+                },
                 "description": {
                   "type": "string",
-                  "example": "Service is Healthy and ready to serve"
+                  "example": "All dependencies are healthy"
                 },
                 "status": {
                   "type": "string",
@@ -2251,7 +2277,7 @@ func init() {
                 },
                 "timestamp": {
                   "type": "string",
-                  "example": "Timestamp of Health"
+                  "example": "2025-11-09T14:16:42Z"
                 }
               }
             }

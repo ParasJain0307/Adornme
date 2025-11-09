@@ -37,7 +37,7 @@ func NewGetHealth(ctx *middleware.Context, handler GetHealthHandler) *GetHealth 
 
 # Health check endpoint
 
-Returns 200 OK if the Adornme is healthy.
+Returns the overall system health status along with the health of individual dependencies like Redis, MongoDB, PostgreSQL, OpenSearch, and MinIO.
 */
 type GetHealth struct {
 	Context *middleware.Context
@@ -65,8 +65,12 @@ func (o *GetHealth) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 // swagger:model GetHealthOKBody
 type GetHealthOKBody struct {
 
+	// dependencies
+	// Example: {"minio":"healthy","mongodb":"healthy","opensearch":"healthy","postgres":"healthy","redis":"healthy"}
+	Dependencies map[string]string `json:"dependencies,omitempty"`
+
 	// description
-	// Example: Service is Healthy and ready to serve
+	// Example: All dependencies are healthy
 	Description string `json:"description,omitempty"`
 
 	// status
@@ -74,7 +78,7 @@ type GetHealthOKBody struct {
 	Status string `json:"status,omitempty"`
 
 	// timestamp
-	// Example: Timestamp of Health
+	// Example: 2025-11-09T14:16:42Z
 	Timestamp string `json:"timestamp,omitempty"`
 }
 

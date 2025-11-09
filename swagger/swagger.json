@@ -1128,18 +1128,31 @@
     },
     "/health": {
       "get": {
-        "description": "Returns 200 OK if the Adornme is healthy.",
+        "description": "Returns the overall system health status along with the health of individual dependencies like Redis, MongoDB, PostgreSQL, OpenSearch, and MinIO.\n",
         "operationId": "getHealth",
         "produces": [
           "application/json"
         ],
         "responses": {
           "200": {
-            "description": "Adronme Service is healthy",
+            "description": "Adornme Service is healthy",
             "schema": {
               "properties": {
+                "dependencies": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "example": {
+                    "minio": "healthy",
+                    "mongodb": "healthy",
+                    "opensearch": "healthy",
+                    "postgres": "healthy",
+                    "redis": "healthy"
+                  },
+                  "type": "object"
+                },
                 "description": {
-                  "example": "Service is Healthy and ready to serve",
+                  "example": "All dependencies are healthy",
                   "type": "string"
                 },
                 "status": {
@@ -1147,7 +1160,7 @@
                   "type": "string"
                 },
                 "timestamp": {
-                  "example": "Timestamp of Health",
+                  "example": "2025-11-09T14:16:42Z",
                   "type": "string"
                 }
               },

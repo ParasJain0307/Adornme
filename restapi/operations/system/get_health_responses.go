@@ -15,7 +15,7 @@ import (
 const GetHealthOKCode int = 200
 
 /*
-GetHealthOK Adronme Service is healthy
+GetHealthOK Adornme Service is healthy
 
 swagger:response getHealthOK
 */
