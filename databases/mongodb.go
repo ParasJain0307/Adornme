@@ -75,19 +75,23 @@ func (m *MongoProvider) HealthDetails(ctx context.Context) (uptime string, laten
 
 	start := time.Now()
 	if err := m.Client.Ping(ctx, nil); err != nil {
-		return "", 0, err
+		return "", 0, fmt.Errorf("mongo ping failed: %w", err)
 	}
 	latencyMs = time.Since(start).Seconds() * 1000
 
+	// Attempt to get uptime only if the user has privileges
 	var result struct {
 		Uptime float64 `bson:"uptime"`
 	}
 
-	if err := m.Client.Database("admin").RunCommand(ctx, map[string]int{"serverStatus": 1}).Decode(&result); err != nil {
-		return "", latencyMs, fmt.Errorf("failed to get serverStatus: %w", err)
+	err = m.Client.Database("admin").RunCommand(ctx, map[string]int{"serverStatus": 1}).Decode(&result)
+	if err != nil {
+		// If unauthorized or other error, just skip uptime
+		uptime = "unknown"
+	} else {
+		uptime = time.Duration(result.Uptime * float64(time.Second)).Truncate(time.Second).String()
 	}
 
-	uptime = time.Duration(result.Uptime * float64(time.Second)).Truncate(time.Second).String()
 	return uptime, latencyMs, nil
 }
 
