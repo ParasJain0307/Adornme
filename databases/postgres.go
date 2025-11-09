@@ -66,6 +66,27 @@ type postgresConfig struct {
 	ConnMaxLifetime string `json:"connMaxLifetime"`
 }
 
+// HealthDetails returns detailed health info (uptime + latency)
+func (p *PostgresProvider) HealthDetails(ctx context.Context) (uptime string, latencyMs float64, err error) {
+	if p == nil || p.Pool == nil {
+		return "", 0, fmt.Errorf("postgres pool is nil")
+	}
+
+	start := time.Now()
+	// latency check
+	if err := p.Pool.Ping(ctx); err != nil {
+		return "", 0, err
+	}
+	latencyMs = time.Since(start).Seconds() * 1000
+
+	// uptime check
+	row := p.Pool.QueryRow(ctx, `SELECT date_trunc('second', now() - pg_postmaster_start_time())::text`)
+	if err := row.Scan(&uptime); err != nil {
+		return "", latencyMs, fmt.Errorf("failed to get uptime: %w", err)
+	}
+	return uptime, latencyMs, nil
+}
+
 func connectPostgres(raw json.RawMessage) (*PostgresProvider, error) {
 	var cfg postgresConfig
 

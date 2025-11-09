@@ -9,9 +9,11 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // GetHealthHandlerFunc turns a function with the right signature into a get health handler
@@ -37,7 +39,7 @@ func NewGetHealth(ctx *middleware.Context, handler GetHealthHandler) *GetHealth 
 
 # Health check endpoint
 
-Returns the overall system health status along with the health of individual dependencies like Redis, MongoDB, PostgreSQL, OpenSearch, and MinIO.
+Returns the overall system health status along with the health, uptime, and latency of individual dependencies like Redis, MongoDB, PostgreSQL, OpenSearch, and MinIO.
 */
 type GetHealth struct {
 	Context *middleware.Context
@@ -66,29 +68,109 @@ func (o *GetHealth) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 type GetHealthOKBody struct {
 
 	// dependencies
-	// Example: {"minio":"healthy","mongodb":"healthy","opensearch":"healthy","postgres":"healthy","redis":"healthy"}
-	Dependencies map[string]string `json:"dependencies,omitempty"`
+	// Example: {"minio":{"lastChecked":"2025-11-09T17:25:30Z","latencyMs":7.3,"status":"healthy","uptime":"60h08m17s"},"mongodb":{"lastChecked":"2025-11-09T17:25:30Z","latencyMs":5.1,"status":"healthy","uptime":"35h59m11s"},"opensearch":{"lastChecked":"2025-11-09T17:25:30Z","latencyMs":4.6,"status":"healthy","uptime":"71h44m21s"},"postgres":{"lastChecked":"2025-11-09T17:25:30Z","latencyMs":3.8,"status":"healthy","uptime":"72h14m03s"},"redis":{"lastChecked":"2025-11-09T17:25:30Z","latencyMs":2.4,"status":"healthy","uptime":"36h42m01s"}}
+	Dependencies map[string]GetHealthOKBodyDependenciesAnon `json:"dependencies,omitempty"`
 
-	// description
-	// Example: All dependencies are healthy
+	// Human-readable summary of the system health
+	// Example: All dependencies are healthy and running smoothly
 	Description string `json:"description,omitempty"`
 
-	// status
+	// Overall system status (ok, degraded, or down)
 	// Example: ok
 	Status string `json:"status,omitempty"`
 
-	// timestamp
-	// Example: 2025-11-09T14:16:42Z
-	Timestamp string `json:"timestamp,omitempty"`
+	// UTC timestamp when the health check was performed
+	// Example: 2025-11-09T17:27:57Z
+	// Format: date-time
+	Timestamp strfmt.DateTime `json:"timestamp,omitempty"`
+
+	// Application uptime since last start
+	// Example: 72h35m10s
+	Uptime string `json:"uptime,omitempty"`
 }
 
 // Validate validates this get health o k body
 func (o *GetHealthOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateDependencies(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this get health o k body based on context it is used
+func (o *GetHealthOKBody) validateDependencies(formats strfmt.Registry) error {
+	if swag.IsZero(o.Dependencies) { // not required
+		return nil
+	}
+
+	for k := range o.Dependencies {
+
+		if swag.IsZero(o.Dependencies[k]) { // not required
+			continue
+		}
+		if val, ok := o.Dependencies[k]; ok {
+			if err := val.Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getHealthOK" + "." + "dependencies" + "." + k)
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("getHealthOK" + "." + "dependencies" + "." + k)
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (o *GetHealthOKBody) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(o.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("getHealthOK"+"."+"timestamp", "body", "date-time", o.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this get health o k body based on the context it is used
 func (o *GetHealthOKBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateDependencies(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetHealthOKBody) contextValidateDependencies(ctx context.Context, formats strfmt.Registry) error {
+
+	for k := range o.Dependencies {
+
+		if val, ok := o.Dependencies[k]; ok {
+			if err := val.ContextValidate(ctx, formats); err != nil {
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -103,6 +185,82 @@ func (o *GetHealthOKBody) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (o *GetHealthOKBody) UnmarshalBinary(b []byte) error {
 	var res GetHealthOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+// GetHealthOKBodyDependenciesAnon get health o k body dependencies anon
+//
+// swagger:model GetHealthOKBodyDependenciesAnon
+type GetHealthOKBodyDependenciesAnon struct {
+
+	// Error while checking dependencies
+	// Example: errorMessage
+	ErrorMessage string `json:"errorMessage,omitempty"`
+
+	// Time when the dependency was last checked
+	// Example: 2025-11-09T17:25:30Z
+	// Format: date-time
+	LastChecked strfmt.DateTime `json:"lastChecked,omitempty"`
+
+	// Response latency in milliseconds
+	// Example: 12.34
+	LatencyMs float32 `json:"latencyMs,omitempty"`
+
+	// Health status of the dependency
+	// Example: healthy
+	Status string `json:"status,omitempty"`
+
+	// How long the dependency has been up
+	// Example: 48h12m45s
+	Uptime string `json:"uptime,omitempty"`
+}
+
+// Validate validates this get health o k body dependencies anon
+func (o *GetHealthOKBodyDependenciesAnon) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateLastChecked(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetHealthOKBodyDependenciesAnon) validateLastChecked(formats strfmt.Registry) error {
+	if swag.IsZero(o.LastChecked) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("lastChecked", "body", "date-time", o.LastChecked.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this get health o k body dependencies anon based on context it is used
+func (o *GetHealthOKBodyDependenciesAnon) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetHealthOKBodyDependenciesAnon) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetHealthOKBodyDependenciesAnon) UnmarshalBinary(b []byte) error {
+	var res GetHealthOKBodyDependenciesAnon
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -789,33 +789,84 @@ paths:
   /health:
     get:
       description: |
-        Returns the overall system health status along with the health of individual dependencies like Redis, MongoDB, PostgreSQL, OpenSearch, and MinIO.
+        Returns the overall system health status along with the health, uptime, and latency of individual dependencies like Redis, MongoDB, PostgreSQL, OpenSearch, and MinIO.
       operationId: getHealth
       produces:
         - application/json
       responses:
         "200":
-          description: Adornme Service is healthy
+          description: Adornme Service health details
           schema:
             properties:
               dependencies:
                 additionalProperties:
-                  type: string
+                  properties:
+                    errorMessage:
+                      description: Error while checking dependencies
+                      example: errorMessage
+                      type: string
+                    lastChecked:
+                      description: Time when the dependency was last checked
+                      example: "2025-11-09T17:25:30Z"
+                      format: date-time
+                      type: string
+                    latencyMs:
+                      description: Response latency in milliseconds
+                      example: 12.34
+                      format: float
+                      type: number
+                    status:
+                      description: Health status of the dependency
+                      example: healthy
+                      type: string
+                    uptime:
+                      description: How long the dependency has been up
+                      example: 48h12m45s
+                      type: string
+                  type: object
                 example:
-                  minio: healthy
-                  mongodb: healthy
-                  opensearch: healthy
-                  postgres: healthy
-                  redis: healthy
+                  minio:
+                    lastChecked: "2025-11-09T17:25:30Z"
+                    latencyMs: 7.3
+                    status: healthy
+                    uptime: 60h08m17s
+                  mongodb:
+                    lastChecked: "2025-11-09T17:25:30Z"
+                    latencyMs: 5.1
+                    status: healthy
+                    uptime: 35h59m11s
+                  opensearch:
+                    lastChecked: "2025-11-09T17:25:30Z"
+                    latencyMs: 4.6
+                    status: healthy
+                    uptime: 71h44m21s
+                  postgres:
+                    lastChecked: "2025-11-09T17:25:30Z"
+                    latencyMs: 3.8
+                    status: healthy
+                    uptime: 72h14m03s
+                  redis:
+                    lastChecked: "2025-11-09T17:25:30Z"
+                    latencyMs: 2.4
+                    status: healthy
+                    uptime: 36h42m01s
                 type: object
               description:
-                example: All dependencies are healthy
+                description: Human-readable summary of the system health
+                example: All dependencies are healthy and running smoothly
                 type: string
               status:
+                description: Overall system status (ok, degraded, or down)
                 example: ok
                 type: string
               timestamp:
-                example: "2025-11-09T14:16:42Z"
+                description: UTC timestamp when the health check was performed
+                example: "2025-11-09T17:27:57Z"
+                format: date-time
+                type: string
+              uptime:
+                description: Application uptime since last start
+                example: 72h35m10s
                 type: string
             type: object
       summary: Health check endpoint

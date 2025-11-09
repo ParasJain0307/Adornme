@@ -20,7 +20,11 @@ type minioConfig struct {
 }
 
 type MinioProvider struct {
-	Client *minio.Client
+	Client      *minio.Client
+	connectedAt time.Time
+	lastCheckOK bool
+	lastLatency float64
+	lastUptime  string
 }
 
 // connectMinio initializes MinIO client with retries
@@ -70,4 +74,26 @@ func (m *MinioProvider) HealthCheck(ctx context.Context) error {
 func (m *MinioProvider) Close() error {
 	// MinIO client does not require explicit close
 	return nil
+}
+
+// HealthDetails returns real latency and uptime
+func (m *MinioProvider) HealthDetails(ctx context.Context) (uptime string, latencyMs float64, err error) {
+	if m == nil || m.Client == nil {
+		return "", 0, fmt.Errorf("minio client is nil")
+	}
+
+	start := time.Now()
+	_, err = m.Client.ListBuckets(ctx)
+	latencyMs = time.Since(start).Seconds() * 1000
+	if err != nil {
+		m.lastCheckOK = false
+		return "", latencyMs, err
+	}
+
+	m.lastCheckOK = true
+	uptime = time.Since(m.connectedAt).Truncate(time.Second).String()
+	m.lastLatency = latencyMs
+	m.lastUptime = uptime
+
+	return uptime, latencyMs, nil
 }

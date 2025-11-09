@@ -283,7 +283,7 @@ func init() {
     },
     "/health": {
       "get": {
-        "description": "Returns the overall system health status along with the health of individual dependencies like Redis, MongoDB, PostgreSQL, OpenSearch, and MinIO.\n",
+        "description": "Returns the overall system health status along with the health, uptime, and latency of individual dependencies like Redis, MongoDB, PostgreSQL, OpenSearch, and MinIO.\n",
         "produces": [
           "application/json"
         ],
@@ -294,34 +294,97 @@ func init() {
         "operationId": "getHealth",
         "responses": {
           "200": {
-            "description": "Adornme Service is healthy",
+            "description": "Adornme Service health details",
             "schema": {
               "type": "object",
               "properties": {
                 "dependencies": {
                   "type": "object",
                   "additionalProperties": {
-                    "type": "string"
+                    "type": "object",
+                    "properties": {
+                      "errorMessage": {
+                        "description": "Error while checking dependencies",
+                        "type": "string",
+                        "example": "errorMessage"
+                      },
+                      "lastChecked": {
+                        "description": "Time when the dependency was last checked",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-09T17:25:30Z"
+                      },
+                      "latencyMs": {
+                        "description": "Response latency in milliseconds",
+                        "type": "number",
+                        "format": "float",
+                        "example": 12.34
+                      },
+                      "status": {
+                        "description": "Health status of the dependency",
+                        "type": "string",
+                        "example": "healthy"
+                      },
+                      "uptime": {
+                        "description": "How long the dependency has been up",
+                        "type": "string",
+                        "example": "48h12m45s"
+                      }
+                    }
                   },
                   "example": {
-                    "minio": "healthy",
-                    "mongodb": "healthy",
-                    "opensearch": "healthy",
-                    "postgres": "healthy",
-                    "redis": "healthy"
+                    "minio": {
+                      "lastChecked": "2025-11-09T17:25:30Z",
+                      "latencyMs": 7.3,
+                      "status": "healthy",
+                      "uptime": "60h08m17s"
+                    },
+                    "mongodb": {
+                      "lastChecked": "2025-11-09T17:25:30Z",
+                      "latencyMs": 5.1,
+                      "status": "healthy",
+                      "uptime": "35h59m11s"
+                    },
+                    "opensearch": {
+                      "lastChecked": "2025-11-09T17:25:30Z",
+                      "latencyMs": 4.6,
+                      "status": "healthy",
+                      "uptime": "71h44m21s"
+                    },
+                    "postgres": {
+                      "lastChecked": "2025-11-09T17:25:30Z",
+                      "latencyMs": 3.8,
+                      "status": "healthy",
+                      "uptime": "72h14m03s"
+                    },
+                    "redis": {
+                      "lastChecked": "2025-11-09T17:25:30Z",
+                      "latencyMs": 2.4,
+                      "status": "healthy",
+                      "uptime": "36h42m01s"
+                    }
                   }
                 },
                 "description": {
+                  "description": "Human-readable summary of the system health",
                   "type": "string",
-                  "example": "All dependencies are healthy"
+                  "example": "All dependencies are healthy and running smoothly"
                 },
                 "status": {
+                  "description": "Overall system status (ok, degraded, or down)",
                   "type": "string",
                   "example": "ok"
                 },
                 "timestamp": {
+                  "description": "UTC timestamp when the health check was performed",
                   "type": "string",
-                  "example": "2025-11-09T14:16:42Z"
+                  "format": "date-time",
+                  "example": "2025-11-09T17:27:57Z"
+                },
+                "uptime": {
+                  "description": "Application uptime since last start",
+                  "type": "string",
+                  "example": "72h35m10s"
                 }
               }
             }
@@ -2239,7 +2302,7 @@ func init() {
     },
     "/health": {
       "get": {
-        "description": "Returns the overall system health status along with the health of individual dependencies like Redis, MongoDB, PostgreSQL, OpenSearch, and MinIO.\n",
+        "description": "Returns the overall system health status along with the health, uptime, and latency of individual dependencies like Redis, MongoDB, PostgreSQL, OpenSearch, and MinIO.\n",
         "produces": [
           "application/json"
         ],
@@ -2250,34 +2313,68 @@ func init() {
         "operationId": "getHealth",
         "responses": {
           "200": {
-            "description": "Adornme Service is healthy",
+            "description": "Adornme Service health details",
             "schema": {
               "type": "object",
               "properties": {
                 "dependencies": {
                   "type": "object",
                   "additionalProperties": {
-                    "type": "string"
+                    "$ref": "#/definitions/DependenciesAnon"
                   },
                   "example": {
-                    "minio": "healthy",
-                    "mongodb": "healthy",
-                    "opensearch": "healthy",
-                    "postgres": "healthy",
-                    "redis": "healthy"
+                    "minio": {
+                      "lastChecked": "2025-11-09T17:25:30Z",
+                      "latencyMs": 7.3,
+                      "status": "healthy",
+                      "uptime": "60h08m17s"
+                    },
+                    "mongodb": {
+                      "lastChecked": "2025-11-09T17:25:30Z",
+                      "latencyMs": 5.1,
+                      "status": "healthy",
+                      "uptime": "35h59m11s"
+                    },
+                    "opensearch": {
+                      "lastChecked": "2025-11-09T17:25:30Z",
+                      "latencyMs": 4.6,
+                      "status": "healthy",
+                      "uptime": "71h44m21s"
+                    },
+                    "postgres": {
+                      "lastChecked": "2025-11-09T17:25:30Z",
+                      "latencyMs": 3.8,
+                      "status": "healthy",
+                      "uptime": "72h14m03s"
+                    },
+                    "redis": {
+                      "lastChecked": "2025-11-09T17:25:30Z",
+                      "latencyMs": 2.4,
+                      "status": "healthy",
+                      "uptime": "36h42m01s"
+                    }
                   }
                 },
                 "description": {
+                  "description": "Human-readable summary of the system health",
                   "type": "string",
-                  "example": "All dependencies are healthy"
+                  "example": "All dependencies are healthy and running smoothly"
                 },
                 "status": {
+                  "description": "Overall system status (ok, degraded, or down)",
                   "type": "string",
                   "example": "ok"
                 },
                 "timestamp": {
+                  "description": "UTC timestamp when the health check was performed",
                   "type": "string",
-                  "example": "2025-11-09T14:16:42Z"
+                  "format": "date-time",
+                  "example": "2025-11-09T17:27:57Z"
+                },
+                "uptime": {
+                  "description": "Application uptime since last start",
+                  "type": "string",
+                  "example": "72h35m10s"
                 }
               }
             }
@@ -3243,6 +3340,38 @@ func init() {
         "quantity": {
           "type": "integer",
           "minimum": 1
+        }
+      }
+    },
+    "DependenciesAnon": {
+      "type": "object",
+      "properties": {
+        "errorMessage": {
+          "description": "Error while checking dependencies",
+          "type": "string",
+          "example": "errorMessage"
+        },
+        "lastChecked": {
+          "description": "Time when the dependency was last checked",
+          "type": "string",
+          "format": "date-time",
+          "example": "2025-11-09T17:25:30Z"
+        },
+        "latencyMs": {
+          "description": "Response latency in milliseconds",
+          "type": "number",
+          "format": "float",
+          "example": 12.34
+        },
+        "status": {
+          "description": "Health status of the dependency",
+          "type": "string",
+          "example": "healthy"
+        },
+        "uptime": {
+          "description": "How long the dependency has been up",
+          "type": "string",
+          "example": "48h12m45s"
         }
       }
     },

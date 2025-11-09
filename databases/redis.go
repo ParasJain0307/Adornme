@@ -74,3 +74,34 @@ func (r *RedisProvider) HealthCheck(ctx context.Context) error {
 func (r *RedisProvider) Close() error {
 	return r.Client.Close()
 }
+
+// HealthDetails returns uptime and latency for Redis
+func (r *RedisProvider) HealthDetails(ctx context.Context) (uptime string, latencyMs float64, err error) {
+	if r == nil || r.Client == nil {
+		return "", 0, fmt.Errorf("redis client is nil")
+	}
+
+	start := time.Now()
+	status := r.Client.Ping(ctx)
+	latencyMs = time.Since(start).Seconds() * 1000
+	if status.Err() != nil {
+		return "", latencyMs, status.Err()
+	}
+
+	// Get uptime from Redis INFO command
+	info, err := r.Client.Info(ctx, "server").Result()
+	if err != nil {
+		return "", latencyMs, fmt.Errorf("failed to get redis info: %w", err)
+	}
+
+	var uptimeSeconds int64
+	fmt.Sscanf(info, "# Server\nredis_version:%*s\nredis_git_sha1:%*s\nredis_git_dirty:%*s\nredis_build_id:%*s\nredis_mode:%*s\nos:%*s\narch_bits:%*d\nmultiplexing_api:%*s\ngcc_version:%*s\nprocess_id:%*d\nrun_id:%*s\ntcp_port:%*d\ntcp6_port:%*d\ntcp_backlog:%*d\ndbfilename:%*s\ndbdir:%*s\nuptime_in_seconds:%d", &uptimeSeconds)
+
+	if uptimeSeconds > 0 {
+		uptime = (time.Duration(uptimeSeconds) * time.Second).String()
+	} else {
+		uptime = "unknown"
+	}
+
+	return uptime, latencyMs, nil
+}

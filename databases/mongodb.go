@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"time"
 
@@ -65,6 +66,29 @@ func connectMongo(raw json.RawMessage) (*MongoProvider, error) {
 	}()
 
 	return provider, nil
+}
+
+func (m *MongoProvider) HealthDetails(ctx context.Context) (uptime string, latencyMs float64, err error) {
+	if m == nil || m.Client == nil {
+		return "", 0, fmt.Errorf("mongo client is nil")
+	}
+
+	start := time.Now()
+	if err := m.Client.Ping(ctx, nil); err != nil {
+		return "", 0, err
+	}
+	latencyMs = time.Since(start).Seconds() * 1000
+
+	var result struct {
+		Uptime float64 `bson:"uptime"`
+	}
+
+	if err := m.Client.Database("admin").RunCommand(ctx, map[string]int{"serverStatus": 1}).Decode(&result); err != nil {
+		return "", latencyMs, fmt.Errorf("failed to get serverStatus: %w", err)
+	}
+
+	uptime = time.Duration(result.Uptime * float64(time.Second)).Truncate(time.Second).String()
+	return uptime, latencyMs, nil
 }
 
 func (m *MongoProvider) HealthCheck(ctx context.Context) error {
