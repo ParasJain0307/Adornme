@@ -33,8 +33,6 @@ paths:
         - application/json
       produces:
         - application/json
-      security:
-        - BearerAuth: []
       parameters:
         - in: body
           name: body
@@ -50,6 +48,22 @@ paths:
           description: Invalid credentials
           schema:
             $ref: "#/definitions/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logoutUser
+      summary: Logout user
+      tags: [Users]
+      responses:
+        200:
+          description: Logout successful
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+        401:
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  
 
   /users/me:
     get:
@@ -139,5 +153,66 @@ paths:
           description: Password reset successful
         400:
           description: Invalid or expired token
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /auth/refresh-token:
+    post:
+      operationId: refreshToken
+      summary: Refresh authentication token
+      tags: [Users]
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/RefreshTokenRequest"
+      responses:
+        200:
+          description: Token refreshed successfully
+          schema:
+            $ref: "#/definitions/AuthResponse"
+        400:
+          description: Invalid refresh token
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /auth/forgot-password:
+    post:
+      operationId: forgetPassword
+      tags: [Users]
+      summary: Request password reset
+      description: Sends a reset password link to the user's email
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            required:
+              - email
+            properties:
+              email:
+                type: string
+                example: user@example.com
+      responses:
+        200:
+          description: Reset link sent (if email exists)
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: If the email exists, a reset link has been sent
+        400:
+          description: Invalid refresh token
           schema:
             $ref: "#/definitions/ErrorResponse"

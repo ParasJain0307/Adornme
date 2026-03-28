@@ -43,8 +43,33 @@ func (m *Migrator) migrateUsers(ctx context.Context) error {
 		password TEXT NOT NULL,
 		created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 		updated_at TIMESTAMP,
-		refresh_token TEXT
+		refresh_token TEXT,
+		access_token TEXT
 	);`)
+	if err != nil {
+		return err
+	}
+	if err := m.migratePasswordResets(ctx); err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (m *Migrator) migratePasswordResets(ctx context.Context) error {
+	_, err := m.Pool.Exec(ctx, `
+	CREATE TABLE IF NOT EXISTS password_resets (
+		id SERIAL PRIMARY KEY,
+		user_id INT NOT NULL,
+		token_hash TEXT NOT NULL,
+		expiry TIMESTAMP NOT NULL,
+		created_at TIMESTAMP DEFAULT NOW(),
+		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+	);
+
+	CREATE INDEX IF NOT EXISTS idx_password_resets_token
+	ON password_resets(token_hash);
+	`)
 	return err
 }
 

@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+	log.Println("Starting Adornme API server...")
 	// Load the embedded swagger spec
 	swaggerSpec, err := loads.Embedded(restapi.SwaggerJSON, restapi.FlatSwaggerJSON)
 	if err != nil {

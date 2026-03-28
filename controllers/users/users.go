@@ -23,6 +23,10 @@ type Users interface {
 	RegisterUser(ctx context.Context, params *models.RegisterRequest) (*model.AuthResponse, *model.ErrorResponse)
 	GetUser(ctx context.Context, userID int64) (*models.User, *models.ErrorResponse)
 	GetUserByEmail(ctx context.Context, Email strfmt.Email) (*db.User, *models.ErrorResponse)
+	RefreshToken(ctx context.Context, refreshToken string) (*model.AuthResponse, *model.ErrorResponse)
+	Login(ctx context.Context, email *strfmt.Email, password string) (*models.AuthResponse, error)
+	Logout(ctx context.Context, refreshToken string) error
+	ForgetPassword(ctx context.Context, email string) error
 }
 
 // NewUser initializes a User instance with request metadata

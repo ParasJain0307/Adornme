@@ -9,11 +9,10 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 )
 
 var logs = logging.Component("restapi")
@@ -38,102 +37,195 @@ func RegisterUser(params users.RegisterUserParams) middleware.Responder {
 	return users.NewRegisterUserCreated().WithPayload(authResponse)
 }
 
-func GetUserProfile(params users.GetUserProfileParams, principle *models.Principal) middleware.Responder {
-	// Extract token from Authorization header
+func GetUserProfile(params users.GetUserProfileParams, principal *models.Principal) middleware.Responder {
+	// Step 1: Extract Authorization header
 	authHeader := params.HTTPRequest.Header.Get("Authorization")
 	if authHeader == "" {
 		msg := "missing authorization header"
+		logs.Errorf(context.Background(), "AUTH ERROR: %s", msg)
+
 		return users.NewGetUserProfileUnauthorized().WithPayload(&models.ErrorResponse{
 			Error: &msg,
 		})
 	}
 
+	// Step 2: Validate JWT token and extract userID
 	userID, err := auth.ValidateAccessToken(authHeader)
 	if err != nil {
+		// Log actual error for debugging (IMPORTANT)
+		logs.Errorf(context.Background(), "JWT VALIDATION FAILED: %v, header: %s", err, authHeader)
+
 		msg := "invalid or expired token"
 		return users.NewGetUserProfileUnauthorized().WithPayload(&models.ErrorResponse{
 			Error: &msg,
 		})
 	}
 
-	// Generate a request ID for logging/tracing
+	// Step 3: Generate request ID for tracing
 	requestID := uuid.New().String()
 	ctx := logging.WithRequestID(context.Background(), requestID)
 
-	logs.Infof(ctx, "GetUserProfile called for userID: %s", userID)
+	logs.Infof(ctx, "GetUserProfile started for userID: %s", userID)
 
-	// Initialize user controller
+	// Step 4: Initialize user controller/service
 	u := user.NewUser(requestID, "en", requestID, "My-Service")
 
-	// Convert string userID to int64
+	// Step 5: Convert userID (string → int64)
 	userIDI, err := strconv.ParseInt(userID, 10, 64)
 	if err != nil {
+		logs.Errorf(ctx, "USER ID PARSE FAILED: userID=%s, error=%v", userID, err)
+
 		msg := "invalid user ID"
 		return users.NewGetUserProfileUnauthorized().WithPayload(&models.ErrorResponse{
 			Error: &msg,
 		})
 	}
-	// Fetch user details from DB
+
+	// Step 6: Fetch user details from DB
 	userData, errResp := u.GetUser(ctx, userIDI)
 	if errResp != nil {
+		// Log DB/service layer error
+		logs.Errorf(ctx, "GET USER FAILED: userID=%d, error=%v", userIDI, errResp)
+
 		return users.NewGetUserProfileUnauthorized().WithPayload(errResp)
 	}
+
+	// Step 7: Success response
+	logs.Infof(ctx, "GetUserProfile success for userID: %d", userIDI)
 
 	return users.NewGetUserProfileOK().WithPayload(userData)
 }
 
-func LoginUser(params users.LoginUserParams, principal *models.Principal) middleware.Responder {
-	// Generate a request ID for logging/tracing
+func LoginUser(params users.LoginUserParams) middleware.Responder {
+
 	requestID := uuid.New().String()
 	ctx := logging.WithRequestID(context.Background(), requestID)
 
-	// Initialize user controller
 	u := user.NewUser(requestID, "en", requestID, "My-Service")
 
-	// 1️⃣ Fetch user from DB
-	dbUser, err := u.GetUserByEmail(ctx, *params.Body.Email)
+	resp, err := u.Login(ctx, params.Body.Email, *params.Body.Password)
 	if err != nil {
-		msg := "invalid email or password"
-		return users.NewLoginUserUnauthorized().WithPayload(&models.ErrorResponse{Error: &msg})
+		msg := err.Error()
+		return users.NewLoginUserUnauthorized().
+			WithPayload(&models.ErrorResponse{Error: &msg})
 	}
 
-	// 2️⃣ Compare password
-	if err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(*params.Body.Password)); err != nil {
-		msg := "invalid email or password"
-		return users.NewLoginUserUnauthorized().WithPayload(&models.ErrorResponse{Error: &msg})
+	return users.NewLoginUserOK().WithPayload(resp)
+}
+
+func RefreshToken(params users.RefreshTokenParams) middleware.Responder {
+
+	// 1️⃣ Request ID + context
+	requestID := uuid.New().String()
+	ctx := logging.WithRequestID(context.Background(), requestID)
+
+	logs.Infof(ctx, "RefreshToken called")
+
+	// 2️⃣ Validate request body
+	if params.Body == nil || params.Body.RefreshToken == nil {
+		msg := "refresh token is required"
+		return users.NewRefreshTokenBadRequest().WithPayload(&models.ErrorResponse{
+			Error: &msg,
+		})
 	}
 
-	userID := fmt.Sprintf("%d", dbUser.ID)
+	// 3️⃣ Initialize user service
+	u := user.NewUser(requestID, "en", requestID, "My-Service")
 
-	// 3️⃣ Generate JWT tokens
-	accessToken, err1 := auth.GenerateToken(userID, 24) // 24h access token
-	if err1 != nil {
-		msg := "failed to generate access token"
-		return users.NewLoginUserUnauthorized().WithPayload(&models.ErrorResponse{Error: &msg})
+	// 4️⃣ Call service layer (ALL logic handled there)
+	tokenResp, errResp := u.RefreshToken(ctx, *params.Body.RefreshToken)
+	if errResp != nil {
+		logs.Errorf(ctx, "REFRESH TOKEN FAILED: %+v", errResp)
+
+		return users.NewGetUserProfileUnauthorized().WithPayload(errResp)
 	}
 
-	refreshToken, err2 := auth.GenerateRefreshToken(userID, 24*7) // 7 days refresh token
-	if err2 != nil {
-		msg := "failed to generate refresh token"
-		return users.NewLoginUserUnauthorized().WithPayload(&models.ErrorResponse{Error: &msg})
+	// 5️⃣ Success response
+	logs.Infof(ctx, "RefreshToken success")
+
+	return users.NewRefreshTokenOK().WithPayload(tokenResp)
+}
+
+func LogoutUser(params users.LogoutUserParams) middleware.Responder {
+
+	// 🔹 Request context + logging
+	requestID := uuid.New().String()
+	ctx := logging.WithRequestID(context.Background(), requestID)
+
+	u := user.NewUser(requestID, "en", requestID, "My-Service")
+
+	// 🔹 1. Extract refresh token
+	authHeader := params.HTTPRequest.Header.Get("Authorization")
+	if authHeader == "" {
+		msg := "missing authorization header"
+		return users.NewLogoutUserUnauthorized().
+			WithPayload(&models.ErrorResponse{Error: &msg})
 	}
 
-	// // 4️⃣ Save refresh token in DB
-	// if err := u.DB.UpdateRefreshToken(ctx, int(dbUser.ID), refreshToken); err != nil {
-	// 	logs.Errorf(ctx, "failed to save refresh token for user %d: %v", dbUser.ID, err)
-	// 	// Not blocking login; token returned to user
-	// }
+	// 🔹 2. Remove "Bearer "
+	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		msg := "invalid authorization format"
+		return users.NewLoginUserUnauthorized().
+			WithPayload(&models.ErrorResponse{Error: &msg})
+	}
 
-	// 5️⃣ Build response
-	emailStr := strfmt.Email(dbUser.Email)
-	return users.NewLoginUserOK().WithPayload(&models.AuthResponse{
-		User: &models.User{
-			ID:    &dbUser.ID,
-			Name:  &dbUser.Name,
-			Email: &emailStr,
-			Phone: dbUser.PhoneNumber,
-		},
-		Token:        &accessToken,
-		RefreshToken: refreshToken,
-	})
+	refreshToken := parts[1]
+	fmt.Printf("Extracted refresh token: %s\n", refreshToken)
+
+	// 🔹 3. Call service layer
+	err := u.Logout(ctx, refreshToken)
+	if err != nil {
+		msg := err.Error()
+		return users.NewLogoutUserUnauthorized().
+			WithPayload(&models.ErrorResponse{Error: &msg})
+	}
+
+	// 🔹 4. Success response
+	success := "logged out successfully"
+	return users.NewLogoutUserOK().WithPayload(&models.SuccessResponse{Message: &success})
+}
+
+func ForgetPassword(params users.ForgetPasswordParams) middleware.Responder {
+
+	// 🔹 Request context + logging
+	requestID := uuid.New().String()
+	ctx := logging.WithRequestID(context.Background(), requestID)
+
+	u := user.NewUser(requestID, "en", requestID, "My-Service")
+
+	// 🔹 Log request start
+	logs.Info(ctx, "ForgetPassword request received")
+
+	// 🔹 Validate input
+	if params.Body.Email == nil {
+		msg := "email is required"
+		logs.Error(ctx, "missing email in request")
+		return users.NewForgetPasswordBadRequest().
+			WithPayload(&models.ErrorResponse{Error: &msg})
+	}
+
+	email := *params.Body.Email
+	logs.Info(ctx, "processing forgot password", "email", email)
+
+	// 🔹 Call service layer
+	err := u.ForgetPassword(ctx, email)
+	if err != nil {
+		msg := "failed to process request"
+
+		logs.Error(ctx, "ForgetPassword service failed",
+			"email", email,
+			"error", err.Error(),
+		)
+
+		return users.NewGetUserProfileUnauthorized().
+			WithPayload(&models.ErrorResponse{Error: &msg})
+	}
+
+	// 🔹 Success log
+	logs.Info(ctx, "ForgetPassword email sent (if user exists)", "email", email)
+
+	success := "If the email exists, a reset link has been sent"
+	return users.NewForgetPasswordOK().
+		WithPayload(&users.ForgetPasswordOKBody{Message: success})
 }

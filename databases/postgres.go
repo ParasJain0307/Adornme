@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -103,6 +104,8 @@ func connectPostgres(raw json.RawMessage) (*PostgresProvider, error) {
 		return nil, err
 	}
 	dbName := u.Database
+
+	log.Println("POSTGRES_DSN =>", cfg.DSN)
 
 	// Connect to the default "postgres" database to create target DB if it doesn't exist
 	u.Database = "postgres" // default DB exists

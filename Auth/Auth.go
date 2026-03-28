@@ -6,19 +6,23 @@ import (
 	"strings"
 	"time"
 
+	"Adornme/config"
+
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var jwtSecret = []byte("your-very-secure-secret-key")
-var refreshSecret = []byte("your-refresh-token-secret-key")
+var cfg = config.LoadConfig()
+
+var jwtSecret = []byte(cfg.JWTSecret)
+var refreshSecret = []byte(cfg.RefreshSecret)
 
 type AuthClaims struct {
 	UserID string `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
-// GenerateToken generates an access JWT token
-func GenerateToken(userID string, expiryHours int) (string, error) {
+// 🔹 Generate Access Token
+func GenerateToken(userID string) (string, error) {
 	if userID == "" {
 		return "", errors.New("userID cannot be empty")
 	}
@@ -26,24 +30,23 @@ func GenerateToken(userID string, expiryHours int) (string, error) {
 	claims := AuthClaims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(expiryHours) * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(cfg.AccessTokenExpiryHours) * time.Hour)), // ✅ FIXED
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			Issuer:    "Adornme",
+			Issuer:    "Adornme.in",
 			Subject:   userID,
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
 	return token.SignedString(jwtSecret)
 }
 
-// GenerateRefreshToken generates a long-lived refresh token
-func GenerateRefreshToken(userID string, expiryDays int) (string, error) {
+// 🔹 Generate Refresh Token
+func GenerateRefreshToken(userID string) (string, error) {
 	claims := AuthClaims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(expiryDays) * 24 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(cfg.RefreshTokenExpiryDays) * 24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Issuer:    "Adornme",
 			Subject:   userID,
@@ -54,56 +57,58 @@ func GenerateRefreshToken(userID string, expiryDays int) (string, error) {
 	return token.SignedString(refreshSecret)
 }
 
-// ValidateAccessToken validates an access JWT token
+// 🔹 Validate Access Token
 func ValidateAccessToken(tokenString string) (string, error) {
-	return validateToken(tokenString, jwtSecret)
+	token := extractToken(tokenString)
+	return validateToken(token, jwtSecret)
 }
 
-// ValidateRefreshToken validates a refresh token
+// 🔹 Validate Refresh Token
 func ValidateRefreshToken(tokenString string) (string, error) {
-	return validateToken(tokenString, refreshSecret)
+	return validateToken(strings.TrimSpace(tokenString), refreshSecret)
 }
 
-// validateToken validates a JWT and returns the user ID if it's valid.
-// Returns detailed errors for easier debugging.
+// 🔹 Core Validation
 func validateToken(tokenString string, secret []byte) (string, error) {
-	// Clean and normalize token string
-	tokenString = strings.TrimPrefix(strings.TrimSpace(tokenString), "Bearer ")
-
 	if tokenString == "" {
 		return "", errors.New("token is empty")
 	}
 
-	// Parse the JWT using the provided secret key
-	parsedToken, err := jwt.ParseWithClaims(tokenString, &AuthClaims{}, func(token *jwt.Token) (interface{}, error) {
-		// Ensure the token uses HMAC signing
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+	token, err := jwt.ParseWithClaims(tokenString, &AuthClaims{}, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
 		return secret, nil
 	})
 
-	// Handle parsing errors
 	if err != nil {
 		if errors.Is(err, jwt.ErrSignatureInvalid) {
 			return "", errors.New("invalid token signature")
 		}
-		if strings.Contains(err.Error(), "token is expired") {
-			return "", errors.New("token has expired")
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			return "", errors.New("token expired")
 		}
-		return "", fmt.Errorf("failed to parse token: %w", err)
+		return "", err
 	}
 
-	// Validate claims
-	if claims, ok := parsedToken.Claims.(*AuthClaims); ok {
-		if !parsedToken.Valid {
-			return "", errors.New("token is invalid")
-		}
-		if claims.UserID == "" {
-			return "", errors.New("token does not contain a user ID")
-		}
-		return claims.UserID, nil
+	claims, ok := token.Claims.(*AuthClaims)
+	if !ok || !token.Valid {
+		return "", errors.New("invalid token")
 	}
 
-	return "", errors.New("token claims are invalid or malformed")
+	if claims.UserID == "" {
+		return "", errors.New("user_id missing")
+	}
+
+	fmt.Println(claims.UserID)
+	return claims.UserID, nil
+}
+
+// 🔹 Extract Bearer Token
+func extractToken(header string) string {
+	parts := strings.Fields(header)
+	if len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+		return parts[1]
+	}
+	return ""
 }

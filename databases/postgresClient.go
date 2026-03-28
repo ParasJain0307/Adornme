@@ -72,6 +72,7 @@ func (p *PostgresProvider) GetUser(ctx context.Context, id int) (*User, error) {
 		`SELECT id,name,email,password,created_at FROM users WHERE id=$1`, id).
 		Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.CreatedAt)
 	if err != nil {
+		logs.Errorf(ctx, "failed to get user with id %d: %v", id, err)
 		return nil, err
 	}
 	return u, nil
@@ -90,12 +91,12 @@ func (p *PostgresProvider) GetUserByEmail(ctx context.Context, email string) (*U
 
 // UpdateUserTokens updates the access and refresh tokens for a user
 // UpdateRefreshToken updates the refresh token for a user
-func (p *PostgresProvider) UpdateUserTokens(ctx context.Context, userID int, refreshToken string) error {
+func (p *PostgresProvider) UpdateUserTokens(ctx context.Context, userID int, refreshToken string, accessToken string) error {
 	_, err := p.Pool.Exec(ctx,
 		`UPDATE users 
-		 SET refresh_token = $1, updated_at = NOW() 
-		 WHERE id = $2`,
-		refreshToken, userID,
+		 SET refresh_token = $1, access_token = $2, updated_at = NOW() 
+		 WHERE id = $3`,
+		refreshToken, accessToken, userID,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to update refresh token for user %d: %w", userID, err)
@@ -201,4 +202,40 @@ func (p *PostgresProvider) GetOrder(ctx context.Context, orderID int) (*Order, [
 	}
 
 	return order, items, nil
+}
+
+func (p *PostgresProvider) GetRefreshToken(ctx context.Context, userID string) (string, error) {
+	var refreshToken string
+
+	err := p.Pool.QueryRow(ctx,
+		`SELECT refresh_token FROM users WHERE id = $1`,
+		userID,
+	).Scan(&refreshToken)
+
+	if err != nil {
+		logs.Errorf(ctx, "failed to get refresh token for user %s: %v", userID, err)
+		return "", err
+	}
+
+	return refreshToken, nil
+}
+
+func (r *PostgresProvider) DeleteRefreshToken(ctx context.Context, userID string) error {
+	query := `UPDATE users SET refresh_token = NULL WHERE id = $1`
+
+	_, err := r.Pool.Exec(ctx, query, userID)
+	if err != nil {
+		logs.Errorf(ctx, "failed to get refresh token for user %s: %v", userID, err)
+		return err
+	}
+	return err
+}
+
+func (r *PostgresProvider) SaveResetToken(ctx context.Context, userID string, token string, expiry time.Time) error {
+	query := `
+	INSERT INTO password_resets (user_id, token_hash, expiry)
+	VALUES ($1, $2, $3)
+	`
+	_, err := r.Pool.Exec(ctx, query, userID, token, expiry)
+	return err
 }

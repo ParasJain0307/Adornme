@@ -71,6 +71,23 @@ definitions:
       phone:
         type: string
         example: +919876543210
+  RefreshTokenRequest:
+    type: object
+    description: "Payload to refresh authentication token."
+    required: [refreshToken]
+    properties:
+      refreshToken:
+        type: string
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        
+  SuccessResponse:
+    type: object
+    description: "Standard success response."
+    required: [message]
+    properties:
+      message:
+        type: string
+        example: Operation successful
 
   LoginRequest:
     type: object

@@ -53,6 +53,7 @@ func configureAPI(api *operations.AdronmeCodeAPI) http.Handler {
 	// Applies when the "Authorization" header is set
 	api.BearerAuthAuth = func(token string) (*models.Principal, error) {
 		// Validate token
+		fmt.Println(token)
 		userID, err := auth.ValidateAccessToken(token)
 		if err != nil {
 			return nil, fmt.Errorf("invalid token: %w", err)
@@ -157,7 +158,7 @@ func configureAPI(api *operations.AdronmeCodeAPI) http.Handler {
 		})
 	}
 	if api.UsersLoginUserHandler == nil {
-		api.UsersLoginUserHandler = users.LoginUserHandlerFunc(func(params users.LoginUserParams, principal *models.Principal) middleware.Responder {
+		api.UsersLoginUserHandler = users.LoginUserHandlerFunc(func(params users.LoginUserParams) middleware.Responder {
 			return middleware.NotImplemented("operation users.LoginUser has not yet been implemented")
 		})
 	}
@@ -176,15 +177,15 @@ func configureAPI(api *operations.AdronmeCodeAPI) http.Handler {
 
 	api.UsersGetUserProfileHandler = users.GetUserProfileHandlerFunc(handlers.GetUserProfile)
 
+	api.UsersRefreshTokenHandler = users.RefreshTokenHandlerFunc(handlers.RefreshToken)
+
 	api.UsersLoginUserHandler = users.LoginUserHandlerFunc(handlers.LoginUser)
 
 	api.SystemGetHealthHandler = system.GetHealthHandlerFunc(handlers.GetHealth)
 
-	if api.UsersRequestPasswordResetHandler == nil {
-		api.UsersRequestPasswordResetHandler = users.RequestPasswordResetHandlerFunc(func(params users.RequestPasswordResetParams) middleware.Responder {
-			return middleware.NotImplemented("operation users.RequestPasswordReset has not yet been implemented")
-		})
-	}
+	api.UsersLogoutUserHandler = users.LogoutUserHandlerFunc(handlers.LogoutUser)
+
+	api.UsersForgetPasswordHandler = users.ForgetPasswordHandlerFunc(handlers.ForgetPassword)
 	if api.UsersResetPasswordHandler == nil {
 		api.UsersResetPasswordHandler = users.ResetPasswordHandlerFunc(func(params users.ResetPasswordParams) middleware.Responder {
 			return middleware.NotImplemented("operation users.ResetPassword has not yet been implemented")

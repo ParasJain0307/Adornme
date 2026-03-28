@@ -104,7 +104,7 @@ services:
   # Adornme application
   # ----------------------------
   adornme:
-    build: .
+    image: adornme-app
     container_name: adornme
     ports:
       - "8080:8080"

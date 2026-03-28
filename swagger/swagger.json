@@ -614,6 +614,19 @@
       },
       "type": "object"
     },
+    "RefreshTokenRequest": {
+      "description": "Payload to refresh authentication token.",
+      "properties": {
+        "refreshToken": {
+          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          "type": "string"
+        }
+      },
+      "required": [
+        "refreshToken"
+      ],
+      "type": "object"
+    },
     "RefundRequest": {
       "description": "Request to process a refund.",
       "properties": {
@@ -694,6 +707,19 @@
           "type": "string"
         }
       },
+      "type": "object"
+    },
+    "SuccessResponse": {
+      "description": "Standard success response.",
+      "properties": {
+        "message": {
+          "example": "Operation successful",
+          "type": "string"
+        }
+      },
+      "required": [
+        "message"
+      ],
       "type": "object"
     },
     "Token": {
@@ -877,23 +903,45 @@
         "consumes": [
           "application/json"
         ],
-        "operationId": "requestPasswordReset",
+        "description": "Sends a reset password link to the user's email",
+        "operationId": "forgetPassword",
         "parameters": [
           {
             "in": "body",
             "name": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ForgotPasswordRequest"
+              "properties": {
+                "email": {
+                  "example": "user@example.com",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "email"
+              ],
+              "type": "object"
             }
           }
         ],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
-            "description": "Password reset email sent"
+            "description": "Reset link sent (if email exists)",
+            "schema": {
+              "properties": {
+                "message": {
+                  "example": "If the email exists, a reset link has been sent",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
           },
           "400": {
-            "description": "Invalid email",
+            "description": "Invalid refresh token",
             "schema": {
               "$ref": "#/definitions/ErrorResponse"
             }
@@ -938,12 +986,69 @@
             }
           }
         },
-        "security": [
+        "summary": "Login user",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "logoutUser",
+        "responses": {
+          "200": {
+            "description": "Logout successful",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        },
+        "summary": "Logout user",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/auth/refresh-token": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "operationId": "refreshToken",
+        "parameters": [
           {
-            "BearerAuth": []
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RefreshTokenRequest"
+            }
           }
         ],
-        "summary": "Login user",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Token refreshed successfully",
+            "schema": {
+              "$ref": "#/definitions/AuthResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid refresh token",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        },
+        "summary": "Refresh authentication token",
         "tags": [
           "Users"
         ]

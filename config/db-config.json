@@ -1,38 +1,38 @@
 {
- "postgres": {
-  "users": {
-    "enabled": true,
-    "dsn": "postgres://postgres:postgres@postgres:5432/usersdb?sslmode=disable",
-    "maxConns": 10,
-    "connMaxLifetime": "1h"
+  "postgres": {
+    "users": {
+      "enabled": true,
+      "dsn": "postgres://postgres:postgres@localhost:5432/usersdb?sslmode=disable",
+      "maxConns": 10,
+      "connMaxLifetime": "1h"
+    },
+    "products": {
+      "enabled": true,
+      "dsn": "postgres://postgres:postgres@localhost:5432/productsdb?sslmode=disable",
+      "maxConns": 10,
+      "connMaxLifetime": "1h"
+    },
+    "orders": {
+      "enabled": true,
+      "dsn": "postgres://postgres:postgres@localhost:5432/ordersdb?sslmode=disable",
+      "maxConns": 10,
+      "connMaxLifetime": "1h"
+    },
+    "inventory": {
+      "enabled": true,
+      "dsn": "postgres://postgres:postgres@localhost:5432/inventorydb?sslmode=disable",
+      "maxConns": 10,
+      "connMaxLifetime": "1h"
+    }
   },
-  "products": {
-    "enabled": true,
-    "dsn": "postgres://postgres:postgres@postgres:5432/productsdb?sslmode=disable",
-    "maxConns": 10,
-    "connMaxLifetime": "1h"
-  },
-  "orders": {
-    "enabled": true,
-    "dsn": "postgres://postgres:postgres@postgres:5432/ordersdb?sslmode=disable",
-    "maxConns": 10,
-    "connMaxLifetime": "1h"
-  },
-  "inventory": {
-    "enabled": true,
-    "dsn": "postgres://postgres:postgres@postgres:5432/inventorydb?sslmode=disable",
-    "maxConns": 10,
-    "connMaxLifetime": "1h"
-  }
-},
   "mongo": {
     "enabled": true,
-    "dsn": "mongodb://mongo:27017",
+    "dsn": "mongodb://localhost:27017",
     "maxPoolSize": 50
   },
   "redis": {
     "enabled": true,
-    "addr": "redis:6379",
+    "addr": "localhost:6380",
     "password": "",
     "db": 0,
     "maxRetries": 5,
@@ -40,7 +40,7 @@
   },
   "minio": {
     "enabled": true,
-    "endpoint": "minio:9000",
+    "endpoint": "localhost:9000",
     "accessKey": "minioadmin",
     "secretKey": "minioadmin",
     "secure": false,
@@ -48,7 +48,7 @@
   },
   "opensearch": {
     "enabled": true,
-    "url": "http://opensearch:9200",
+    "url": "http://localhost:9201",
     "maxIdleConnsPerHost": 10,
     "idleConnTimeoutSeconds": 30
   }
