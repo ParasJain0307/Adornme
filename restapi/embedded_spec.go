@@ -79,6 +79,65 @@ func init() {
         }
       }
     },
+    "/auth/identify": {
+      "post": {
+        "description": "Determines whether a user exists and their verification status",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Users"
+        ],
+        "summary": "Identify user by email or phone",
+        "operationId": "identifyUser",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "identifier"
+              ],
+              "properties": {
+                "identifier": {
+                  "type": "string",
+                  "example": "user@example.com"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Identification result",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "exists": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "verified": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid identifier",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
     "/auth/login": {
       "post": {
         "consumes": [
@@ -2196,6 +2255,65 @@ func init() {
           },
           "400": {
             "description": "Invalid refresh token",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/auth/identify": {
+      "post": {
+        "description": "Determines whether a user exists and their verification status",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Users"
+        ],
+        "summary": "Identify user by email or phone",
+        "operationId": "identifyUser",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "identifier"
+              ],
+              "properties": {
+                "identifier": {
+                  "type": "string",
+                  "example": "user@example.com"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Identification result",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "exists": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "verified": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid identifier",
             "schema": {
               "$ref": "#/definitions/ErrorResponse"
             }

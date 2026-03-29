@@ -953,6 +953,65 @@
         ]
       }
     },
+    "/auth/identify": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Determines whether a user exists and their verification status",
+        "operationId": "identifyUser",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "identifier": {
+                  "example": "user@example.com",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "identifier"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Identification result",
+            "schema": {
+              "properties": {
+                "exists": {
+                  "example": true,
+                  "type": "boolean"
+                },
+                "verified": {
+                  "example": true,
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid identifier",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        },
+        "summary": "Identify user by email or phone",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
     "/auth/login": {
       "post": {
         "consumes": [

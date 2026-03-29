@@ -151,6 +151,12 @@ func NewAdronmeCodeAPI(spec *loads.Document) *AdronmeCodeAPI {
 			return middleware.NotImplemented("operation users.GetUserProfile has not yet been implemented")
 		}),
 
+		UsersIdentifyUserHandler: users.IdentifyUserHandlerFunc(func(params users.IdentifyUserParams) middleware.Responder {
+			_ = params
+
+			return middleware.NotImplemented("operation users.IdentifyUser has not yet been implemented")
+		}),
+
 		PaymentsInitiatePaymentHandler: payments.InitiatePaymentHandlerFunc(func(params payments.InitiatePaymentParams, principal *models.Principal) middleware.Responder {
 			_ = params
 			_ = principal
@@ -352,6 +358,8 @@ type AdronmeCodeAPI struct {
 	AdminUsersGetUserHandler admin_users.GetUserHandler
 	// UsersGetUserProfileHandler sets the operation handler for the get user profile operation
 	UsersGetUserProfileHandler users.GetUserProfileHandler
+	// UsersIdentifyUserHandler sets the operation handler for the identify user operation
+	UsersIdentifyUserHandler users.IdentifyUserHandler
 	// PaymentsInitiatePaymentHandler sets the operation handler for the initiate payment operation
 	PaymentsInitiatePaymentHandler payments.InitiatePaymentHandler
 	// OrdersListOrdersHandler sets the operation handler for the list orders operation
@@ -513,6 +521,9 @@ func (o *AdronmeCodeAPI) Validate() error {
 	}
 	if o.UsersGetUserProfileHandler == nil {
 		unregistered = append(unregistered, "users.GetUserProfileHandler")
+	}
+	if o.UsersIdentifyUserHandler == nil {
+		unregistered = append(unregistered, "users.IdentifyUserHandler")
 	}
 	if o.PaymentsInitiatePaymentHandler == nil {
 		unregistered = append(unregistered, "payments.InitiatePaymentHandler")
@@ -728,6 +739,10 @@ func (o *AdronmeCodeAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/me"] = users.NewGetUserProfile(o.context, o.UsersGetUserProfileHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/auth/identify"] = users.NewIdentifyUser(o.context, o.UsersIdentifyUserHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

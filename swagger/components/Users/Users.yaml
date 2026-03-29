@@ -216,3 +216,42 @@ paths:
           description: Invalid refresh token
           schema:
             $ref: "#/definitions/ErrorResponse"
+
+  /auth/identify:
+    post:
+      operationId: identifyUser
+      tags: [Users]
+      summary: Identify user by email or phone
+      description: Determines whether a user exists and their verification status
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            required:
+              - identifier
+            properties:
+              identifier:
+                type: string
+                example: "user@example.com"
+      responses:
+        200:
+          description: Identification result
+          schema:
+            type: object
+            properties:
+              exists:
+                type: boolean
+                example: true
+              verified:
+                type: boolean
+                example: true
+        400:
+          description: Invalid identifier
+          schema:
+            $ref: "#/definitions/ErrorResponse"
