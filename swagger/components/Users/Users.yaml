@@ -242,16 +242,79 @@ paths:
       responses:
         200:
           description: Identification result
-          schema:
-            type: object
-            properties:
-              exists:
-                type: boolean
-                example: true
-              verified:
-                type: boolean
-                example: true
         400:
           description: Invalid identifier
           schema:
             $ref: "#/definitions/ErrorResponse"
+
+  /auth/otp/send:
+    post:
+      operationId: OTPLogin
+      summary: Send OTP to email or phone
+      tags: [Users]
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/SendOTPRequest'
+      responses:
+        "200":
+          description: OTP sent response
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/GenericResponse'
+        "400":
+          description: Invalid input
+
+  /auth/otp/verify:
+    post:
+      operationId: VerifyOTP
+      summary: Verify OTP and login user
+      tags: [Users]
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/VerifyOTPRequest'
+      responses:
+        "200":
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/VerifyOTPResponse'
+        "401":
+          description: Invalid OTP
+
+  /auth/otp/resend:
+    post:
+      summary: Resend OTP
+      tags: [Users]
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+              $ref: '#/definitions/SendOTPRequest'
+      responses:
+        "200":
+          description: OTP resent
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/GenericResponse'

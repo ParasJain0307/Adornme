@@ -49,6 +49,24 @@ func NewAdronmeCodeAPI(spec *loads.Document) *AdronmeCodeAPI {
 
 		JSONProducer: runtime.JSONProducer(),
 
+		UsersOTPLoginHandler: users.OTPLoginHandlerFunc(func(params users.OTPLoginParams) middleware.Responder {
+			_ = params
+
+			return middleware.NotImplemented("operation users.OTPLogin has not yet been implemented")
+		}),
+
+		UsersPostAuthOtpResendHandler: users.PostAuthOtpResendHandlerFunc(func(params users.PostAuthOtpResendParams) middleware.Responder {
+			_ = params
+
+			return middleware.NotImplemented("operation users.PostAuthOtpResend has not yet been implemented")
+		}),
+
+		UsersVerifyOTPHandler: users.VerifyOTPHandlerFunc(func(params users.VerifyOTPParams) middleware.Responder {
+			_ = params
+
+			return middleware.NotImplemented("operation users.VerifyOTP has not yet been implemented")
+		}),
+
 		CartAddItemToCartHandler: cart.AddItemToCartHandlerFunc(func(params cart.AddItemToCartParams, principal *models.Principal) middleware.Responder {
 			_ = params
 			_ = principal
@@ -328,6 +346,12 @@ type AdronmeCodeAPI struct {
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
 
+	// UsersOTPLoginHandler sets the operation handler for the o t p login operation
+	UsersOTPLoginHandler users.OTPLoginHandler
+	// UsersPostAuthOtpResendHandler sets the operation handler for the post auth otp resend operation
+	UsersPostAuthOtpResendHandler users.PostAuthOtpResendHandler
+	// UsersVerifyOTPHandler sets the operation handler for the verify o t p operation
+	UsersVerifyOTPHandler users.VerifyOTPHandler
 	// CartAddItemToCartHandler sets the operation handler for the add item to cart operation
 	CartAddItemToCartHandler cart.AddItemToCartHandler
 	// ShippingAddShippingAddressHandler sets the operation handler for the add shipping address operation
@@ -477,6 +501,15 @@ func (o *AdronmeCodeAPI) Validate() error {
 		unregistered = append(unregistered, "AuthorizationAuth")
 	}
 
+	if o.UsersOTPLoginHandler == nil {
+		unregistered = append(unregistered, "users.OTPLoginHandler")
+	}
+	if o.UsersPostAuthOtpResendHandler == nil {
+		unregistered = append(unregistered, "users.PostAuthOtpResendHandler")
+	}
+	if o.UsersVerifyOTPHandler == nil {
+		unregistered = append(unregistered, "users.VerifyOTPHandler")
+	}
 	if o.CartAddItemToCartHandler == nil {
 		unregistered = append(unregistered, "cart.AddItemToCartHandler")
 	}
@@ -679,6 +712,18 @@ func (o *AdronmeCodeAPI) initHandlerCache() {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
 
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/auth/otp/send"] = users.NewOTPLogin(o.context, o.UsersOTPLoginHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/auth/otp/resend"] = users.NewPostAuthOtpResend(o.context, o.UsersPostAuthOtpResendHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/auth/otp/verify"] = users.NewVerifyOTP(o.context, o.UsersVerifyOTPHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

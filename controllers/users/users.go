@@ -27,6 +27,7 @@ type Users interface {
 	Login(ctx context.Context, email *strfmt.Email, password string) (*models.AuthResponse, error)
 	Logout(ctx context.Context, refreshToken string) error
 	ForgetPassword(ctx context.Context, email string) error
+	IdentifyUser(ctx context.Context, identifier string) error
 }
 
 // NewUser initializes a User instance with request metadata

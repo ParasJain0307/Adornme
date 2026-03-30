@@ -3,7 +3,10 @@ package utils
 import (
 	"context"
 	"log"
+	"net/mail"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -39,4 +42,42 @@ func RequestIDFromContext(ctx context.Context) string {
 		return v.(string)
 	}
 	return ""
+}
+
+func IsEmail(input string) bool {
+	_, err := mail.ParseAddress(input)
+	return err == nil
+}
+
+func NormalizeEmail(email string) string {
+	return strings.ToLower(strings.TrimSpace(email))
+}
+
+func IsValidIndianPhone(phone string) bool {
+	if len(phone) != 10 {
+		return false
+	}
+	return phone[0] >= '6' && phone[0] <= '9'
+}
+
+var phoneRegex = regexp.MustCompile(`^\+?[0-9]{10,15}$`)
+
+func CleanInput(input string) string {
+	input = strings.TrimSpace(input)
+	input = strings.ReplaceAll(input, "\u00A0", "")
+	input = strings.ReplaceAll(input, "＋", "+")
+	return input
+}
+
+func IsPhone(input string) bool {
+	input = CleanInput(input)
+	return phoneRegex.MatchString(input)
+}
+
+func NormalizePhone(phone string) string {
+	phone = CleanInput(phone)
+	phone = strings.ReplaceAll(phone, " ", "")
+	phone = strings.TrimPrefix(phone, "+91")
+	phone = strings.TrimPrefix(phone, "91")
+	return phone
 }

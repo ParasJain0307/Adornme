@@ -39,8 +39,11 @@ func (m *Migrator) migrateUsers(ctx context.Context) error {
 	CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
 		name TEXT NOT NULL,
-		email TEXT UNIQUE NOT NULL,
+		email TEXT UNIQUE,
+		phone TEXT UNIQUE,
 		password TEXT NOT NULL,
+		email_verified BOOLEAN DEFAULT FALSE,
+		phone_verified BOOLEAN DEFAULT FALSE,
 		created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 		updated_at TIMESTAMP,
 		refresh_token TEXT,

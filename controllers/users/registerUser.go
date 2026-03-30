@@ -50,12 +50,12 @@ func (u *User) RegisterUser(ctx context.Context, params *models.RegisterRequest)
 
 	// Build DB user
 	dbUser := &db.User{
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-		Email:       email,
-		Name:        name,
-		PhoneNumber: phone,
-		Password:    string(hashedPassword),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+		Email:     email,
+		Name:      name,
+		Phone:     phone,
+		Password:  string(hashedPassword),
 	}
 
 	// Create user in DB
@@ -81,7 +81,7 @@ func (u *User) RegisterUser(ctx context.Context, params *models.RegisterRequest)
 		return nil, &models.ErrorResponse{Error: &msg}
 	}
 
-	dbUser.RefreshToken = refreshToken
+	dbUser.RefreshToken = &refreshToken
 	if err := u.DB.UpdateUserTokens(ctx, id, refreshToken, accessToken); err != nil {
 		logs.Errorf(ctx, "failed to save tokens for user %d: %v", id, err)
 	}
@@ -127,7 +127,7 @@ func (u *User) GetUser(ctx context.Context, userID int64) (*models.User, *models
 		ID:    &dbUser.ID,
 		Name:  &dbUser.Name,
 		Email: email,
-		Phone: dbUser.PhoneNumber,
+		Phone: dbUser.Phone,
 	}, nil
 }
 
@@ -262,7 +262,7 @@ func (u *User) Login(ctx context.Context, email *strfmt.Email, password string) 
 			ID:    &dbUser.ID,
 			Name:  &dbUser.Name,
 			Email: &emailStr,
-			Phone: dbUser.PhoneNumber,
+			Phone: dbUser.Phone,
 		},
 		Token:        &accessToken,
 		RefreshToken: refreshToken,
@@ -369,4 +369,26 @@ func (u *User) ForgetPassword(ctx context.Context, email string) error {
 	}()
 
 	return nil
+}
+
+func (u *User) IdentifyUser(ctx context.Context, identifier string) error {
+	identifier = strings.TrimSpace(identifier)
+
+	// 🔍 Email case
+	if utils.IsEmail(identifier) {
+		identifier = utils.NormalizeEmail(identifier)
+		return nil
+	}
+
+	// 📱 Phone case
+	if utils.IsPhone(identifier) {
+		identifier = utils.NormalizeEmail(identifier)
+
+		if !utils.IsValidIndianPhone(identifier) {
+			return fmt.Errorf("invalid phone number")
+		}
+		return nil
+	}
+
+	return fmt.Errorf("invalid identifier")
 }

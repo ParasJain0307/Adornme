@@ -233,6 +233,15 @@
       ],
       "type": "object"
     },
+    "GenericResponse": {
+      "properties": {
+        "message": {
+          "example": "OTP sent if account exists",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "LoginRequest": {
       "description": "Payload to authenticate a user.",
       "properties": {
@@ -690,6 +699,19 @@
       ],
       "type": "object"
     },
+    "SendOTPRequest": {
+      "properties": {
+        "identifier": {
+          "description": "Email or phone number",
+          "example": "+919968177234",
+          "type": "string"
+        }
+      },
+      "required": [
+        "identifier"
+      ],
+      "type": "object"
+    },
     "ShippingOption": {
       "description": "Represents available shipping option.",
       "properties": {
@@ -891,6 +913,36 @@
         }
       },
       "type": "object"
+    },
+    "VerifyOTPRequest": {
+      "properties": {
+        "identifier": {
+          "example": "+919968177234",
+          "type": "string"
+        },
+        "otp": {
+          "example": "123456",
+          "type": "string"
+        }
+      },
+      "required": [
+        "identifier",
+        "otp"
+      ],
+      "type": "object"
+    },
+    "VerifyOTPResponse": {
+      "properties": {
+        "message": {
+          "example": "Login successful",
+          "type": "string"
+        },
+        "token": {
+          "example": "jwt-token-here",
+          "type": "string"
+        }
+      },
+      "type": "object"
     }
   },
   "info": {
@@ -984,20 +1036,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Identification result",
-            "schema": {
-              "properties": {
-                "exists": {
-                  "example": true,
-                  "type": "boolean"
-                },
-                "verified": {
-                  "example": true,
-                  "type": "boolean"
-                }
-              },
-              "type": "object"
-            }
+            "description": "Identification result"
           },
           "400": {
             "description": "Invalid identifier",
@@ -1069,6 +1108,101 @@
           }
         },
         "summary": "Logout user",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/auth/otp/resend": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SendOTPRequest"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OTP resent"
+          }
+        },
+        "summary": "Resend OTP",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/auth/otp/send": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "operationId": "OTPLogin",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SendOTPRequest"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OTP sent response"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        },
+        "summary": "Send OTP to email or phone",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/auth/otp/verify": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "operationId": "VerifyOTP",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/VerifyOTPRequest"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful login"
+          },
+          "401": {
+            "description": "Invalid OTP"
+          }
+        },
+        "summary": "Verify OTP and login user",
         "tags": [
           "Users"
         ]

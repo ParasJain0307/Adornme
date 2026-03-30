@@ -114,20 +114,7 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "Identification result",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "exists": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "verified": {
-                  "type": "boolean",
-                  "example": true
-                }
-              }
-            }
+            "description": "Identification result"
           },
           "400": {
             "description": "Invalid identifier",
@@ -196,6 +183,101 @@ func init() {
             "schema": {
               "$ref": "#/definitions/ErrorResponse"
             }
+          }
+        }
+      }
+    },
+    "/auth/otp/resend": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Users"
+        ],
+        "summary": "Resend OTP",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SendOTPRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OTP resent"
+          }
+        }
+      }
+    },
+    "/auth/otp/send": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Users"
+        ],
+        "summary": "Send OTP to email or phone",
+        "operationId": "OTPLogin",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SendOTPRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OTP sent response"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/auth/otp/verify": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Users"
+        ],
+        "summary": "Verify OTP and login user",
+        "operationId": "VerifyOTP",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/VerifyOTPRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful login"
+          },
+          "401": {
+            "description": "Invalid OTP"
           }
         }
       }
@@ -1520,6 +1602,15 @@ func init() {
         }
       }
     },
+    "GenericResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "OTP sent if account exists"
+        }
+      }
+    },
     "LoginRequest": {
       "description": "Payload to authenticate a user.",
       "type": "object",
@@ -1977,6 +2068,19 @@ func init() {
         }
       }
     },
+    "SendOTPRequest": {
+      "type": "object",
+      "required": [
+        "identifier"
+      ],
+      "properties": {
+        "identifier": {
+          "description": "Email or phone number",
+          "type": "string",
+          "example": "+919968177234"
+        }
+      }
+    },
     "ShippingOption": {
       "description": "Represents available shipping option.",
       "type": "object",
@@ -2178,6 +2282,36 @@ func init() {
           "example": 919876543210
         }
       }
+    },
+    "VerifyOTPRequest": {
+      "type": "object",
+      "required": [
+        "identifier",
+        "otp"
+      ],
+      "properties": {
+        "identifier": {
+          "type": "string",
+          "example": "+919968177234"
+        },
+        "otp": {
+          "type": "string",
+          "example": "123456"
+        }
+      }
+    },
+    "VerifyOTPResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Login successful"
+        },
+        "token": {
+          "type": "string",
+          "example": "jwt-token-here"
+        }
+      }
     }
   },
   "securityDefinitions": {
@@ -2297,20 +2431,7 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "Identification result",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "exists": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "verified": {
-                  "type": "boolean",
-                  "example": true
-                }
-              }
-            }
+            "description": "Identification result"
           },
           "400": {
             "description": "Invalid identifier",
@@ -2379,6 +2500,101 @@ func init() {
             "schema": {
               "$ref": "#/definitions/ErrorResponse"
             }
+          }
+        }
+      }
+    },
+    "/auth/otp/resend": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Users"
+        ],
+        "summary": "Resend OTP",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SendOTPRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OTP resent"
+          }
+        }
+      }
+    },
+    "/auth/otp/send": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Users"
+        ],
+        "summary": "Send OTP to email or phone",
+        "operationId": "OTPLogin",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SendOTPRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OTP sent response"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/auth/otp/verify": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Users"
+        ],
+        "summary": "Verify OTP and login user",
+        "operationId": "VerifyOTP",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/VerifyOTPRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful login"
+          },
+          "401": {
+            "description": "Invalid OTP"
           }
         }
       }
@@ -3706,6 +3922,15 @@ func init() {
         }
       }
     },
+    "GenericResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "OTP sent if account exists"
+        }
+      }
+    },
     "LoginRequest": {
       "description": "Payload to authenticate a user.",
       "type": "object",
@@ -4163,6 +4388,19 @@ func init() {
         }
       }
     },
+    "SendOTPRequest": {
+      "type": "object",
+      "required": [
+        "identifier"
+      ],
+      "properties": {
+        "identifier": {
+          "description": "Email or phone number",
+          "type": "string",
+          "example": "+919968177234"
+        }
+      }
+    },
     "ShippingOption": {
       "description": "Represents available shipping option.",
       "type": "object",
@@ -4362,6 +4600,36 @@ func init() {
         "phone": {
           "type": "string",
           "example": 919876543210
+        }
+      }
+    },
+    "VerifyOTPRequest": {
+      "type": "object",
+      "required": [
+        "identifier",
+        "otp"
+      ],
+      "properties": {
+        "identifier": {
+          "type": "string",
+          "example": "+919968177234"
+        },
+        "otp": {
+          "type": "string",
+          "example": "123456"
+        }
+      }
+    },
+    "VerifyOTPResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Login successful"
+        },
+        "token": {
+          "type": "string",
+          "example": "jwt-token-here"
         }
       }
     }

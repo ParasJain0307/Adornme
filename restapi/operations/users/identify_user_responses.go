@@ -19,11 +19,6 @@ IdentifyUserOK Identification result
 swagger:response identifyUserOK
 */
 type IdentifyUserOK struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *IdentifyUserOKBody `json:"body,omitempty"`
 }
 
 // NewIdentifyUserOK creates IdentifyUserOK with default headers values
@@ -32,27 +27,12 @@ func NewIdentifyUserOK() *IdentifyUserOK {
 	return &IdentifyUserOK{}
 }
 
-// WithPayload adds the payload to the identify user o k response
-func (o *IdentifyUserOK) WithPayload(payload *IdentifyUserOKBody) *IdentifyUserOK {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the identify user o k response
-func (o *IdentifyUserOK) SetPayload(payload *IdentifyUserOKBody) {
-	o.Payload = payload
-}
-
 // WriteResponse to the client
 func (o *IdentifyUserOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
+
 	rw.WriteHeader(200)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
 }
 
 // IdentifyUserBadRequestCode is the HTTP code returned for type IdentifyUserBadRequest

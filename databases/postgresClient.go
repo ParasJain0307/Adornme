@@ -8,14 +8,16 @@ import (
 
 // ----------------- User Model -----------------
 type User struct {
-	ID           int64     `db:"id"`         // Primary Key
-	Name         string    `db:"name"`       // User full name
-	Email        string    `db:"email"`      // Unique email
-	Password     string    `db:"password"`   // Hashed password
-	CreatedAt    time.Time `db:"created_at"` // Creation timestamp
-	UpdatedAt    time.Time `db:"updated_at"` // Optional update timestamp
-	PhoneNumber  string    `db:"phone_number"`
-	RefreshToken string    `db:"refresh_token"`
+	ID            int64     `db:"id"`
+	Name          string    `db:"name"`
+	Email         string    `db:"email"`    // nullable
+	Phone         string    `db:"phone"`    // nullable
+	Password      string    `db:"password"` // nullable (for phone users)
+	EmailVerified bool      `db:"email_verified"`
+	PhoneVerified bool      `db:"phone_verified"`
+	CreatedAt     time.Time `db:"created_at"`
+	UpdatedAt     time.Time `db:"updated_at"`
+	RefreshToken  *string   `db:"refresh_token"`
 }
 
 // ----------------- Product Model -----------------
@@ -82,6 +84,17 @@ func (p *PostgresProvider) GetUserByEmail(ctx context.Context, email string) (*U
 	u := &User{}
 	err := p.Pool.QueryRow(ctx,
 		`SELECT id,name,email,password,created_at FROM users WHERE email=$1`, email).
+		Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
+func (p *PostgresProvider) GetUserByPhone(ctx context.Context, phone string) (*User, error) {
+	u := &User{}
+	err := p.Pool.QueryRow(ctx,
+		`SELECT id,name,email,password,created_at FROM users WHERE phone=$1`, phone).
 		Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.CreatedAt)
 	if err != nil {
 		return nil, err

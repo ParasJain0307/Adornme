@@ -8,6 +8,7 @@ import (
 	"Adornme/restapi/operations/users"
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -228,4 +229,40 @@ func ForgetPassword(params users.ForgetPasswordParams) middleware.Responder {
 	success := "If the email exists, a reset link has been sent"
 	return users.NewForgetPasswordOK().
 		WithPayload(&users.ForgetPasswordOKBody{Message: success})
+}
+
+func IdentifyUser(params users.IdentifyUserParams) middleware.Responder {
+	// 🔹 Request context + logging
+	requestID := uuid.New().String()
+	ctx := logging.WithRequestID(context.Background(), requestID)
+
+	u := user.NewUser(requestID, "en", requestID, "My-Service")
+
+	// 🔹 Log request start
+	logs.Info(ctx, "IdentifyUser request received")
+
+	// 🔹 Validate input
+
+	if params.Body.Identifier == nil || strings.TrimSpace(*params.Body.Identifier) == "" {
+		msg := "invalid identifier format"
+		return users.NewIdentifyUserBadRequest().WithPayload(&models.ErrorResponse{
+			Error: &msg,
+		})
+	}
+
+	identifier := strings.TrimSpace(*params.Body.Identifier)
+
+	// ✅ Call controller
+	err := u.IdentifyUser(params.HTTPRequest.Context(), identifier)
+	if err != nil {
+		log.Printf("Identify error: %v", err)
+
+		msg := "invalid identifier"
+		return users.NewIdentifyUserBadRequest().WithPayload(&models.ErrorResponse{
+			Error: &msg,
+		})
+	}
+
+	return users.NewIdentifyUserOK()
+
 }

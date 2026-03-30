@@ -185,6 +185,8 @@ func configureAPI(api *operations.AdronmeCodeAPI) http.Handler {
 
 	api.UsersLogoutUserHandler = users.LogoutUserHandlerFunc(handlers.LogoutUser)
 
+	api.UsersIdentifyUserHandler = users.IdentifyUserHandlerFunc(handlers.IdentifyUser)
+
 	api.UsersForgetPasswordHandler = users.ForgetPasswordHandlerFunc(handlers.ForgetPassword)
 	if api.UsersResetPasswordHandler == nil {
 		api.UsersResetPasswordHandler = users.ResetPasswordHandlerFunc(func(params users.ResetPasswordParams) middleware.Responder {

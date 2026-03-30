@@ -148,6 +148,46 @@ definitions:
         type: string
         example: +919876543210
 
+  SendOTPRequest:
+      type: object
+      required:
+        - identifier
+      properties:
+        identifier:
+          type: string
+          example: "+919968177234"
+          description: Email or phone number
+
+  VerifyOTPRequest:
+    type: object
+    required:
+      - identifier
+      - otp
+    properties:
+      identifier:
+        type: string
+        example: "+919968177234"
+      otp:
+        type: string
+        example: "123456"
+
+  GenericResponse:
+    type: object
+    properties:
+      message:
+        type: string
+        example: "OTP sent if account exists"
+
+  VerifyOTPResponse:
+    type: object
+    properties:
+      message:
+        type: string
+        example: "Login successful"
+      token:
+        type: string
+        example: "jwt-token-here"
+
   # ---------------------------
   # Product
   # ---------------------------
