@@ -392,3 +392,25 @@ func (u *User) IdentifyUser(ctx context.Context, identifier string) error {
 
 	return fmt.Errorf("invalid identifier")
 }
+
+func (u *User) SendOTP(ctx context.Context, identifier string) error {
+	identifier = strings.TrimSpace(identifier)
+
+	// 🔍 Email case
+	if utils.IsEmail(identifier) {
+		identifier = utils.NormalizeEmail(identifier)
+		return nil
+	}
+
+	// 📱 Phone case
+	if utils.IsPhone(identifier) {
+		identifier = utils.NormalizeEmail(identifier)
+
+		if !utils.IsValidIndianPhone(identifier) {
+			return fmt.Errorf("invalid phone number")
+		}
+		return nil
+	}
+
+	return fmt.Errorf("invalid identifier")
+}

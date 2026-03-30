@@ -241,10 +241,16 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "OTP sent response"
+            "description": "OTP sent response",
+            "schema": {
+              "$ref": "#/definitions/GenericResponse"
+            }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid identifier",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
@@ -277,7 +283,10 @@ func init() {
             "description": "Successful login"
           },
           "401": {
-            "description": "Invalid OTP"
+            "description": "Invalid OTP",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
@@ -2558,10 +2567,16 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "OTP sent response"
+            "description": "OTP sent response",
+            "schema": {
+              "$ref": "#/definitions/GenericResponse"
+            }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid identifier",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
@@ -2594,7 +2609,10 @@ func init() {
             "description": "Successful login"
           },
           "401": {
-            "description": "Invalid OTP"
+            "description": "Invalid OTP",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }

@@ -823,8 +823,12 @@ paths:
       responses:
         "200":
           description: OTP sent response
+          schema:
+            $ref: '#/definitions/GenericResponse'
         "400":
-          description: Invalid input
+          description: Invalid identifier
+          schema:
+            $ref: '#/definitions/ErrorResponse'
       summary: Send OTP to email or phone
       tags:
         - Users
@@ -846,6 +850,8 @@ paths:
           description: Successful login
         "401":
           description: Invalid OTP
+          schema:
+            $ref: '#/definitions/ErrorResponse'
       summary: Verify OTP and login user
       tags:
         - Users

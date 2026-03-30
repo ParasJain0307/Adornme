@@ -265,12 +265,12 @@ paths:
       responses:
         "200":
           description: OTP sent response
-          content:
-            application/json:
-              schema:
-                $ref: '#/definitions/GenericResponse'
+          schema:
+            $ref: '#/definitions/GenericResponse'
         "400":
-          description: Invalid input
+          description: Invalid identifier
+          schema:
+            $ref: "#/definitions/ErrorResponse"
 
   /auth/otp/verify:
     post:
@@ -296,6 +296,8 @@ paths:
                 $ref: '#/definitions/VerifyOTPResponse'
         "401":
           description: Invalid OTP
+          schema:
+            $ref: "#/definitions/ErrorResponse"
 
   /auth/otp/resend:
     post:

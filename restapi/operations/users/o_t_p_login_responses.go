@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	"Adornme/models"
 )
 
 // OTPLoginOKCode is the HTTP code returned for type OTPLoginOK
@@ -17,6 +19,11 @@ OTPLoginOK OTP sent response
 swagger:response oTPLoginOK
 */
 type OTPLoginOK struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.GenericResponse `json:"body,omitempty"`
 }
 
 // NewOTPLoginOK creates OTPLoginOK with default headers values
@@ -25,23 +32,43 @@ func NewOTPLoginOK() *OTPLoginOK {
 	return &OTPLoginOK{}
 }
 
+// WithPayload adds the payload to the o t p login o k response
+func (o *OTPLoginOK) WithPayload(payload *models.GenericResponse) *OTPLoginOK {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the o t p login o k response
+func (o *OTPLoginOK) SetPayload(payload *models.GenericResponse) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *OTPLoginOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
-
 	rw.WriteHeader(200)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }
 
 // OTPLoginBadRequestCode is the HTTP code returned for type OTPLoginBadRequest
 const OTPLoginBadRequestCode int = 400
 
 /*
-OTPLoginBadRequest Invalid input
+OTPLoginBadRequest Invalid identifier
 
 swagger:response oTPLoginBadRequest
 */
 type OTPLoginBadRequest struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.ErrorResponse `json:"body,omitempty"`
 }
 
 // NewOTPLoginBadRequest creates OTPLoginBadRequest with default headers values
@@ -50,10 +77,25 @@ func NewOTPLoginBadRequest() *OTPLoginBadRequest {
 	return &OTPLoginBadRequest{}
 }
 
+// WithPayload adds the payload to the o t p login bad request response
+func (o *OTPLoginBadRequest) WithPayload(payload *models.ErrorResponse) *OTPLoginBadRequest {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the o t p login bad request response
+func (o *OTPLoginBadRequest) SetPayload(payload *models.ErrorResponse) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *OTPLoginBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
-
 	rw.WriteHeader(400)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }

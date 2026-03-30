@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	"Adornme/models"
 )
 
 // VerifyOTPOKCode is the HTTP code returned for type VerifyOTPOK
@@ -42,6 +44,11 @@ VerifyOTPUnauthorized Invalid OTP
 swagger:response verifyOTPUnauthorized
 */
 type VerifyOTPUnauthorized struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.ErrorResponse `json:"body,omitempty"`
 }
 
 // NewVerifyOTPUnauthorized creates VerifyOTPUnauthorized with default headers values
@@ -50,10 +57,25 @@ func NewVerifyOTPUnauthorized() *VerifyOTPUnauthorized {
 	return &VerifyOTPUnauthorized{}
 }
 
+// WithPayload adds the payload to the verify o t p unauthorized response
+func (o *VerifyOTPUnauthorized) WithPayload(payload *models.ErrorResponse) *VerifyOTPUnauthorized {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the verify o t p unauthorized response
+func (o *VerifyOTPUnauthorized) SetPayload(payload *models.ErrorResponse) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *VerifyOTPUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
-
 	rw.WriteHeader(401)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }

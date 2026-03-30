@@ -266,3 +266,37 @@ func IdentifyUser(params users.IdentifyUserParams) middleware.Responder {
 	return users.NewIdentifyUserOK()
 
 }
+
+func SendOTP(params users.OTPLoginParams) middleware.Responder {
+	// 🔹 Request context + logging
+	requestID := uuid.New().String()
+	ctx := logging.WithRequestID(context.Background(), requestID)
+
+	u := user.NewUser(requestID, "en", requestID, "My-Service")
+
+	// 🔹 Log request start
+	logs.Info(ctx, "SendOTP request received")
+
+	// 🔹 Validate input
+	if params.Body.Identifier == nil || strings.TrimSpace(*params.Body.Identifier) == "" {
+		msg := "invalid identifier format"
+		return users.NewOTPLoginBadRequest().WithPayload(&models.ErrorResponse{
+			Error: &msg,
+		})
+	}
+
+	identifier := strings.TrimSpace(*params.Body.Identifier)
+
+	// ✅ Call controller
+	err := u.SendOTP(params.HTTPRequest.Context(), identifier)
+	if err != nil {
+		log.Printf("Send OTP error: %v", err)
+
+		msg := "failed to send OTP"
+		return users.NewOTPLoginBadRequest().WithPayload(&models.ErrorResponse{
+			Error: &msg,
+		})
+	}
+
+	return users.NewOTPLoginOK().WithPayload(&models.GenericResponse{Message: "OTP sent successfully"})
+}
